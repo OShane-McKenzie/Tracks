@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.litecodez.tracksc.MainActivity
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
@@ -18,6 +20,8 @@ import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.ChatModel
+import com.litecodez.tracksc.models.MessageModel
+import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.notificationWatcher
 import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.Controller
@@ -32,202 +36,150 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class TCNotificationService:Service() {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val mainScope = CoroutineScope(Dispatchers.Main)
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+class TCNotificationService : LifecycleService() {
+
+    private lateinit var notificationManager: NotificationManager
+
+
+
+    override fun onCreate() {
+        super.onCreate()
+        setupNotificationChannel()
     }
 
-    private fun newMessageNotification(title: String, text:String, id:Int = 1, chatID:String = "", notificationManager: NotificationManager){
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.putExtra("ACTION", chatID)
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            1,
-            notificationIntent,
-            PendingIntent.FLAG_IMMUTABLE
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        startNotificationMonitoring()
+        return START_STICKY
+    }
+
+    private fun setupNotificationChannel() {
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel(
+            "TC_NOTIFICATION_CHANNEL",
+            appName,
+            NotificationManager.IMPORTANCE_HIGH
         )
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun startNotificationMonitoring() {
+        lifecycleScope.launch {
+            getUserUid()?.let { userId ->
+                monitorNotifications(userId)
+            }
+        }
+    }
+
+    private suspend fun monitorNotifications(userId: String) {
+        notificationWatcher.watch(Databases.Collections.NOTIFICATIONS, userId) { notificationList ->
+            val notifications = (notificationList["notifications"] as? List<Map<String, Any>>)?.map { it.toNotificationModel() } ?: return@watch
+            contentProvider.listOfNotifications.value = notifications
+            processNotifications(notifications)
+        }
+    }
+
+    private fun processNotifications(notifications: List<NotificationModel>) {
+        val notificationMap = mutableMapOf<String, Int>()
+        notifications.forEachIndexed { index, notification ->
+            when {
+                !notification.wasRead && notification.type != TCDataTypes.NotificationType.MESSAGE_DELETION ->
+                    processNewMessage(notification, index, notificationMap)
+                notification.type == TCDataTypes.NotificationType.MESSAGE_DELETION && !notification.wasRead ->
+                    processMessageDeletion(notification)
+            }
+        }
+        contentProvider.notificationMap.value = notificationMap
+    }
+
+    private fun processNewMessage(notification: NotificationModel, index: Int, notificationMap: MutableMap<String, Int>) {
+        contentRepository.getChat(chatId = notification.chatId) { updatedChat ->
+            updatedChat?.let { chat ->
+                try {
+                    val newMessage = chat.content[notification.messageIndex]
+                    notificationMap[chat.id] = index
+                    updateConversationList(chat)
+                    if (contentProvider.currentChat.value?.id != chat.id) {
+                        showNewMessageNotification(newMessage, chat.id)
+                    }else if (!Controller.isChatContainerOpen.value) {
+                        showNewMessageNotification(newMessage, chat.id)
+                    }
+                } catch (e: IndexOutOfBoundsException) {
+                    handleNotificationError(notification, e)
+                }
+            }
+            Controller.reloadList.value = !Controller.reloadList.value
+        }
+    }
+
+    private fun processMessageDeletion(notification: NotificationModel) {
+        contentRepository.getChat(chatId = notification.chatId) { chat ->
+            chat?.let { updatedChat ->
+                updateConversationList(updatedChat)
+                markNotificationAsRead(notification)
+            }
+        }
+    }
+
+    private fun updateConversationList(updatedChat: ChatModel) {
+        val conversations = contentProvider.conversations.value.toMutableList()
+        val index = conversations.indexOfFirst { it.id == updatedChat.id }
+        if (index != -1) {
+            conversations[index] = updatedChat
+        } else {
+            conversations.add(updatedChat)
+        }
+        contentProvider.conversations.value = conversations
+    }
+
+    private fun showNewMessageNotification(message: MessageModel, chatId: String) {
+        val title = message.senderName
+        val text = when (message.type) {
+            TCDataTypes.MessageType.TEXT -> message.content
+            TCDataTypes.MessageType.IMAGE -> "Sent an image"
+            TCDataTypes.MessageType.VIDEO -> "Sent a video"
+            else -> "Sent an audio"
+        }
+        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+            putExtra("ACTION", chatId)
+        }
+        val notificationId = message.sender.stringToUniqueInt()
+        val pendingIntent = PendingIntent.getActivity(this, notificationId, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = Notification.Builder(this, "TC_NOTIFICATION_CHANNEL")
             .setSmallIcon(R.drawable.tc2)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(pendingIntent)
             .build()
-        notificationManager.notify(id, notification)
+        notificationManager.notify(notificationId, notification)
     }
-    private var notificationId = 0
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val notificationChannel = NotificationChannel(
-            "TC_NOTIFICATION_CHANNEL",
-            appName,
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        notificationManager.createNotificationChannel(notificationChannel)
-        var userId = getUserUid()
-        scope.launch {
-            while (true){
-                if(userId != null){
-                    notificationWatcher.watch(Databases.Collections.NOTIFICATIONS, userId!!){ notificationList ->
-                        val notifications = (notificationList["notifications"] as MutableList<Map<String, Any>>).map { notification ->
-                            notification.toNotificationModel()
-                        }
+    private fun handleNotificationError(notification: NotificationModel, error: Exception) {
+        error.printStackTrace()
+        markNotificationAsRead(notification)
+    }
 
-                        contentProvider.listOfNotifications.value = notifications
-                        val notificationMap = mutableMapOf<String, Int>()
-                        //var updatedChat: ChatModel? = null
-                        //var chatIndex = 0
-                        if(contentProvider.listOfNotifications.value.isEmpty()) {
-                            return@watch
-                        }
-                        contentProvider.listOfNotifications.value.forEachIndexed { index, notification ->
-                            if(!notification.wasRead && notification.type != TCDataTypes.NotificationType.MESSAGE_DELETION) {
-                                contentRepository.getChat(chatId = notification.chatId) { updChat ->
-                                    // = updChat
-                                    if(updChat != null) {
-                                        try{
-                                            val newMessage =
-                                                updChat.content[notification.messageIndex]
-
-                                            notificationMap[updChat.id] = index
-                                            val senderName = newMessage.senderName
-                                            val chat =
-                                                contentProvider.conversations.value.find {
-                                                    it.id == notification.chatId
-                                                }
-                                            if (chat != null) {
-                                                val tempList = contentProvider
-                                                    .conversations.value
-                                                    .toMutableList()
-                                                tempList[contentProvider.conversations.value.indexOf(
-                                                    chat
-                                                )] =
-                                                    updChat
-                                                mainScope.launch {
-                                                    contentProvider.conversations.value =
-                                                        tempList.toList()
-                                                }
-
-                                            } else {
-                                                mainScope.launch {
-                                                    contentProvider.conversations.value =
-                                                        contentProvider.conversations.value.toMutableList()
-                                                            .apply {
-                                                                add(updChat)
-                                                            }.toList()
-                                                }
-                                            }
-                                            if (contentProvider.currentChat.value?.id != updChat.id) {
-                                                newMessageNotification(
-                                                    title = senderName,
-                                                    text = when (newMessage.type) {
-                                                        TCDataTypes.MessageType.TEXT -> {
-                                                            newMessage.content
-                                                        }
-
-                                                        TCDataTypes.MessageType.IMAGE -> {
-                                                            "Sent an image"
-                                                        }
-
-                                                        TCDataTypes.MessageType.VIDEO -> {
-                                                            "Sent a video"
-                                                        }
-
-                                                        else -> {
-                                                            "Sent an audio"
-                                                        }
-                                                    },
-                                                    id = newMessage.sender.stringToUniqueInt(),
-                                                    chatID = updChat.id,
-                                                    notificationManager = notificationManager
-                                                )
-
-                                            }else{
-
-                                                return@getChat
-                                            }
-                                        }catch (e:IndexOutOfBoundsException){
-                                            println("Index out of bounds exception $e")
-                                            e.printStackTrace()
-                                            try {
-                                                notification.wasRead = true
-                                                val tempList =
-                                                    contentProvider.listOfNotifications.value.toMutableList()
-                                                tempList[tempList.indexOf(notification)] =
-                                                    notification
-                                                contentRepository.updateDocument(
-                                                    collectionPath = Databases.Collections.NOTIFICATIONS,
-                                                    documentId = getUserUid()!!,
-                                                    data = mapOf("notifications" to tempList.toListMap())
-                                                ){
-                                                    success, error ->
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.d("Get notification", "Error getting notification ${e.message}")
-                                            }
-                                        }
-                                    }
-                                    Controller.reloadList.value = !Controller.reloadList.value
-                                }
-
-                            }else if(
-                                notification.type == TCDataTypes.NotificationType.MESSAGE_DELETION &&
-                                !notification.wasRead
-                            ){
-                                contentRepository.getChat(chatId = notification.chatId){ chat ->
-                                    //updatedChat = chat
-
-                                    chat.ifNotNull { updChat ->
-                                        val localChat = contentProvider.conversations.value.find {
-                                            it.id == updChat.id
-                                        }
-
-                                        localChat.ifNotNull { lclChat ->
-                                            val tempList = contentProvider.conversations.value.toMutableList()
-                                            tempList[contentProvider.conversations.value.indexOf(lclChat)] = updChat
-                                            contentProvider.conversations.value = tempList.toList()
-                                        }
-
-                                        try {
-                                            notification.wasRead = true
-                                            val tempList =
-                                                contentProvider.listOfNotifications.value.toMutableList()
-                                            tempList[tempList.indexOf(notification)] =
-                                                notification
-                                            contentRepository.updateDocument(
-                                                collectionPath = Databases.Collections.NOTIFICATIONS,
-                                                documentId = getUserUid()!!,
-                                                data = mapOf("notifications" to tempList.toListMap())
-                                            ){
-                                                    success, error ->
-                                                Controller.reloadList.value = !Controller.reloadList.value
-                                            }
-                                        } catch (e: Exception) {
-                                            Log.d("Get notification", "Error getting notification ${e.message}")
-                                        }
-
-                                    }
-                                }
-                            }
-                            contentProvider.notificationMap.value = notificationMap
-                        }
-                    }
-                    break
-                }else{
-                    userId = getUserUid()
-                    delay(1000)
+    private fun markNotificationAsRead(notification: NotificationModel) {
+        notification.wasRead = true
+        val updatedNotifications = contentProvider.listOfNotifications.value.toMutableList()
+        val index = updatedNotifications.indexOfFirst { it == notification }
+        if (index != -1) {
+            updatedNotifications[index] = notification
+            contentRepository.updateDocument(
+                collectionPath = Databases.Collections.NOTIFICATIONS,
+                documentId = getUserUid() ?: return,
+                data = mapOf("notifications" to updatedNotifications.toListMap())
+            ) { success, error ->
+                if (!success) {
+                    error?.let { Log.e("TCNotificationService", "Error updating notification: ${it.message}") }
                 }
+                Controller.reloadList.value = !Controller.reloadList.value
             }
         }
-
-        return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
+        notificationWatcher.stopAllWatchers()
     }
 }

@@ -90,7 +90,7 @@ fun ChatListItem(
     var notifications by remember {
         mutableIntStateOf(0)
     }
-    LaunchedEffect(contentProvider.listOfNotifications.value, contentProvider.conversations.value) {
+    LaunchedEffect(contentProvider.listOfNotifications.value, contentProvider.conversations.value, Unit) {
         notifications = 0
         //notifications = contentProvider.listOfNotifications.value.count { it.chatId == getChatModel.id && !it.wasRead }
         contentProvider.listOfNotifications.value.forEach {
@@ -138,7 +138,11 @@ fun ChatListItem(
                 .padding(3.dp)
                 .defaultMinSize(minHeight = 80.dp)
                 .clickable {
-                    onClick(getChatModel)
+                    val chatIndex = contentProvider.conversations.value.find { it.id == getChatModel.id }?.let {
+                        contentProvider.conversations.value.indexOf(it)
+                    }?:index
+                    contentProvider.currentChat.value = contentProvider.conversations.value[chatIndex]
+                    onClick(contentProvider.currentChat.value!!)
                 },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)

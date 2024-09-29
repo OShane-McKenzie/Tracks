@@ -17,6 +17,7 @@ import com.litecodez.tracksc.objects.HasId
 import com.litecodez.tracksc.models.OutcomeModel
 import com.litecodez.tracksc.models.ReactionModel
 import com.litecodez.tracksc.models.TagsModel
+import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.MediaDeleteRequest
 import kotlinx.serialization.json.Json
@@ -473,6 +474,25 @@ fun MediaDeleteRequest.toMap(): Map<String, Any> {
     )
 }
 
+
+fun TrackConnectionRequestModel.toMap(): Map<String, Any> {
+    return mapOf(
+        "senderId" to senderId,
+        "targetId" to targetId,
+        "targetType" to targetType,
+        "targetName" to targetName
+    )
+}
+
+fun Map<String, Any>.toTrackConnectionRequestModel(): TrackConnectionRequestModel {
+    return TrackConnectionRequestModel(
+        senderId = this["senderId"] as String,
+        targetId = this["targetId"] as String,
+        targetType = this["targetType"] as String,
+        targetName = this["targetName"] as String
+    )
+}
+
 fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG, quality: Int = 100): ByteArray {
     val bitmap = this.asAndroidBitmap()
     val stream = ByteArrayOutputStream()
@@ -529,6 +549,7 @@ fun String.stringToUniqueInt(): Int {
     // Process each character, join the results, and convert to Int
     return lastFour.map { letterToPosition(it) }.joinToString("").toInt()
 }
+
 
 //================================================================
 // Other functions

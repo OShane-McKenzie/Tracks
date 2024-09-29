@@ -14,4 +14,5 @@ object Controller {
     val isService2Initialized = mutableStateOf(false)
     val reloadMessage = mutableStateOf(false)
     val reloadList = mutableStateOf(false)
+    val isChatContainerOpen = mutableStateOf(false)
 }

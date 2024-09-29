@@ -39,6 +39,7 @@ val contentRepository = ContentRepository()
 val conversationWatcher = Watchers()
 val notificationWatcher = Watchers()
 val tagsWatcher = Watchers()
+val tcConnectionWatcher = Watchers()
 class MainActivity : ComponentActivity() {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 

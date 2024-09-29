@@ -8,6 +8,7 @@ import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.LocalImages
 import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.TagsModel
+import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.models.Videos
 
@@ -27,5 +28,7 @@ class ContentProvider() {
     val localImages = mutableStateOf(LocalImages())
     val loadedImageBytes = mutableStateMapOf<String, ByteArray>()
     val notificationCounter = mutableStateOf(mapOf<String,Int>())
+    val requestedConnections = mutableStateOf(listOf<TrackConnectionRequestModel>())
+
 
 }

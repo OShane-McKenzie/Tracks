@@ -111,13 +111,14 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     }
     LaunchedEffect(Unit) {
         updateNotificationStatus(contentProvider, contentRepository)
+        Controller.isChatContainerOpen.value = true
     }
     LaunchedEffect(Controller.reloadMessage.value) {
         if (wasMessageDeleted) {
             listState.animateScrollToItem(index = messages.value.lastIndex)
             wasMessageDeleted = false
         }
-
+        Controller.isChatContainerOpen.value = true
         if (messages.value.isNotEmpty() && isFirstTimeLaunch) {
             delay(200)
             listState.animateScrollToItem(listState.layoutInfo.totalItemsCount - 1)
@@ -131,6 +132,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
         appNavigator.screenTerminationActionsList[chatContainer] = {
             try {
                 contentProvider.currentChat.value = null
+                Controller.isChatContainerOpen.value = false
                 contentProvider.currentChat.value.ifNotNull {
                     conversationWatcher.stopWatcher(it.id)
                 }
@@ -281,24 +283,35 @@ private fun updateNotificationStatus(
     contentProvider: ContentProvider,
     contentRepository: ContentRepository
 ) {
+    var notificationFound = false
     try {
-        val thisNotification = com.litecodez.tracksc.contentProvider.listOfNotifications.value
-            .find { it.chatId == com.litecodez.tracksc.contentProvider.currentChat.value?.id }
-        if (thisNotification != null) {
-            thisNotification.wasRead = true
-            val tempList = com.litecodez.tracksc.contentProvider.listOfNotifications.value.toMutableList()
-            tempList[tempList.indexOf(thisNotification)] = thisNotification
-            com.litecodez.tracksc.contentProvider.listOfNotifications.value = tempList.toList()
-            com.litecodez.tracksc.contentRepository.updateDocument(
+        // Filter all notifications that match the current chat ID
+        val updatedNotifications = contentProvider.listOfNotifications.value.map { notification ->
+            if (notification.chatId == contentProvider.currentChat.value?.id) {
+                notificationFound = true
+                notification.copy(wasRead = true) // Create a copy with updated wasRead field
+            } else {
+                notification // Leave the notification unchanged if it doesn't match
+            }
+        }
+
+        // Update the list in the content provider
+        contentProvider.listOfNotifications.value = updatedNotifications
+
+        if(notificationFound){
+            // Update the document in the repository
+            contentRepository.updateDocument(
                 collectionPath = Databases.Collections.NOTIFICATIONS,
                 documentId = getUserUid()!!,
-                data = mapOf("notifications" to tempList.toListMap())
+                data = mapOf("notifications" to updatedNotifications.toListMap())
             )
         }
+
     } catch (e: Exception) {
-        Log.d("Get notification", "Error getting notification ${e.message}")
+        Log.d("Get notification", "Error getting notifications ${e.message}")
     }
 }
+
 
 private fun updateMessageReactions(
     contentProvider: ContentProvider,
@@ -455,6 +468,7 @@ private fun cleanupConversation(contentProvider: ContentProvider, conversationWa
             conversationWatcher.stopWatcher(chat.id)
         }
         contentProvider.currentChat.value = null
+        Controller.isChatContainerOpen.value = false
     } catch (e: Exception) {
         Log.e("Cleanup", "Error disposing of conversation watcher: ${e.message}")
     }
@@ -465,7 +479,7 @@ fun DeleteMessageDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Delete message") },
-        text = { Text("Are you sure you want to delete this message?") },
+        text = { Text("Do you want to delete this message?") },
         confirmButton = {
             Text("Delete", color = Color.Red, modifier = Modifier.clickable(onClick = onConfirm))
         },

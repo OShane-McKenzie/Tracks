@@ -71,7 +71,7 @@ fun ChatList(modifier: Modifier = Modifier) {
                     key(conversation.id) {
                         val setIndex by remember { mutableIntStateOf(index) }
                         ChatListItemWrapper(chat = conversation, index = setIndex) {
-                            contentProvider.currentChat.value = conversation
+                            //contentProvider.currentChat.value = conversation
                             appNavigator.setViewState(chatContainer)
                         }
                     }

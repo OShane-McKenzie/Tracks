@@ -180,4 +180,32 @@ object Initializer {
             Controller.isService2Initialized.value = true
         }
     }
+
+    fun initConversations(){
+        contentRepository.getAllUserConversationDocuments(Databases.Collections.CONVERSATIONS){ documentSnapshots ->
+            val conversations = mutableListOf<ChatModel>()
+            documentSnapshots?.forEach { document ->
+                try {
+                    conversations.add(
+                        ChatModel().apply {
+                            this.id = document.data!!["id"] as String
+                            this.owners = document.data!!["owners"] as MutableList<String>
+                            this.admins = document.data!!["admins"] as MutableList<String>
+                            this.ownershipModel = document.data!!["ownershipModel"] as String
+                            this.mediaLinks = document.data!!["mediaLinks"] as MutableList<String>
+                            this.currentMediaLink = document.data!!["currentMediaLink"] as String
+                            this.content = (document.data!!["content"] as MutableList<Map<String, Any>>)
+                                .map { it.toMessageModel() }.toMutableList()
+                            this.conversationPhoto = document.data!!["conversationPhoto"] as String
+                            this.conversationName = document.data!!["conversationName"] as String
+                        }
+                    )
+
+                }catch (e:Exception){
+                    e.printStackTrace()
+                }
+            }
+            contentProvider.conversations.value = conversations
+        }
+    }
 }
