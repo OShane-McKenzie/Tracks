@@ -42,7 +42,7 @@ fun Connect(
                 TCDataTypes.Fibonacci.THREE.dp
             )
             .background(
-                color = contentProvider.minorThemeColor.value.copy(alpha = 0.5f)
+                color = Color.White.copy(alpha = 0.0f)
             ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -51,14 +51,14 @@ fun Connect(
             text = tag.name,
             modifier = Modifier.weight(1f),
             maxLines = 1,
-            color = Color.Black,
-            fontWeight = FontWeight.Bold
+            color = contentProvider.textThemeColor.value,
+            fontWeight = FontWeight.ExtraBold
         )
         Text(
             text = "<${ tag.type }>",
             modifier = Modifier.weight(1f),
             maxLines = 1,
-            color = Color.Black,
+            color = contentProvider.textThemeColor.value,
             fontWeight = FontWeight.Light,
             fontStyle = FontStyle.Italic
         )

@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.unit.dp
@@ -49,7 +52,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
     var isTyping by remember { mutableStateOf(false) }
     var typingTimer by remember { mutableStateOf<Job?>(null) }
     val scope = rememberCoroutineScope()
-
+    val scrollState = rememberScrollState()
     val filteredTags = contentProvider.tags.value.filter {
         it.id .contains(text.trim(), ignoreCase = true) &&
         text.trim().isNotEmpty() &&
@@ -62,6 +65,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp))
         OutlinedTextField(
             value = text,
             placeholder = {
@@ -77,15 +81,16 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
         )
 
         if(text.trim().isNotEmpty() && text.trim().length > 1){
+            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp))
             SimpleAnimator(
-                style = AnimationStyle.UP
+                style = AnimationStyle.UP,
+                modifier = Modifier.wrapContentSize()
             ){
                 Row(
                     modifier =
                     Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .defaultMinSize(minHeight = TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                        .height(TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.dp)
                         .background(
                             color = Color.White.copy(alpha = 0.4f),
                             shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
@@ -103,13 +108,21 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(
-                                    color = Color.White.copy(alpha = 0.0f),
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            contentProvider.minorThemeColor.value.copy(alpha = 0.8f),
+                                            contentProvider.majorThemeColor.value.copy(alpha = 0.8f)
+                                        ),
+                                        startY = TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.toFloat(),
+                                        endY = TCDataTypes.Fibonacci.TWENTY_ONE.toFloat()
+                                    ),
                                     shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
                                 )
                                 .blur(TCDataTypes.Fibonacci.TWELVE.dp)
                         ) {}
+
                         Column(
-                            modifier = Modifier.wrapContentSize()
+                            modifier = Modifier.wrapContentSize().verticalScroll(scrollState),
                         ) {
                             filteredTags.forEach { tag ->
                                 Connect(

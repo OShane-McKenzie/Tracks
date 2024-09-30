@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -63,7 +64,7 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHTY_NINE.dp))
+            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.dp))
 
             LazyColumn(
                 modifier = Modifier
@@ -84,7 +85,7 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
                 }
             }
         }
-        TagsFilter(operator = operator, modifier = Modifier.align(Alignment.TopCenter))
+        TagsFilter(operator = operator, modifier = Modifier.align(Alignment.TopCenter).wrapContentSize())
     }
 }
 

@@ -155,7 +155,7 @@ fun ChatListItem(
                 ImageInChat(
                     img = imageData,
                     modifier = Modifier.size(80.dp),
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(TCDataTypes.Fibonacci.FIVE),
                     contentScale = ContentScale.FillBounds,
                     defaultImage = R.drawable.user
                 ) { bitmap ->

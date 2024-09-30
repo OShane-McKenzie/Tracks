@@ -63,9 +63,11 @@ class ConversationService : LifecycleService() {
             conversationName = data["conversationName"] as String
         )
 
-        contentProvider.currentChat.value = updatedChat
-        contentProvider.currentPlaylist.value = updatedChat.mediaLinks
-        contentProvider.nowPlaying.value = updatedChat.currentMediaLink
+        if(Controller.isChatContainerOpen.value && contentProvider.currentChat.value?.id == updatedChat.id) {
+            contentProvider.currentChat.value = updatedChat
+            contentProvider.currentPlaylist.value = updatedChat.mediaLinks
+            contentProvider.nowPlaying.value = updatedChat.currentMediaLink
+        }
         Controller.reloadMessage.value = !Controller.reloadMessage.value
     }
 
