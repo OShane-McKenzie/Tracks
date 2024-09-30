@@ -8,7 +8,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import com.google.firebase.auth.FirebaseAuth
 import com.litecodez.tracksc.models.ChatModel
-import com.litecodez.tracksc.models.LocalImage
 import com.litecodez.tracksc.models.LocalImages
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
@@ -22,6 +21,7 @@ import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.MediaDeleteRequest
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.CompressorStreamFactory
+import org.intellij.lang.annotations.Pattern
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -35,9 +35,6 @@ import java.util.Base64
 import java.util.Calendar
 import java.util.Locale
 import java.util.Random
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 
 //================================================================
@@ -68,7 +65,7 @@ fun getToast(context: Context, msg:String, long:Boolean = false){
  * @param value The value to be saved.
  * @param context The context of the application.
  */
-fun saveCredentials(key:String = "tos",value:String="",context: Context){
+fun savePreferences(key:String = "tos", value:String="", context: Context){
     val sharedPreferences = context.getSharedPreferences("userInfo", Context.MODE_PRIVATE)
     val editor = sharedPreferences.edit()
     editor.putString(key, value)
@@ -82,7 +79,7 @@ fun saveCredentials(key:String = "tos",value:String="",context: Context){
  * @param context The context of the application.
  * @return The loaded user credentials, or an empty string if not found.
  */
-fun loadCredentials(context: Context, key:String = "tos", default:String = ""):String{
+fun loadPreferences(context: Context, key:String = "tos", default:String = ""):String{
     val sharedPreferences = context.getSharedPreferences("userInfo", Context.MODE_PRIVATE)
     println(sharedPreferences.getString(key, ""))
     return sharedPreferences.getString(key, "") ?: default
@@ -291,15 +288,15 @@ fun isValidTime(input: String): Boolean {
     }
 }
 
-fun getCurrentDate(): String {
+fun getCurrentDate(pattern: String = "yyyy-MM-dd"): String {
     val currentDateTime = LocalDateTime.now()
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val formatter = DateTimeFormatter.ofPattern(pattern)
     return currentDateTime.format(formatter)
 }
 
-fun getCurrentTime(): String {
+fun getCurrentTime(pattern: String = "HH:mm:ss.SSS"): String {
     val currentTime = LocalTime.now()
-    val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
+    val formatter = DateTimeFormatter.ofPattern(pattern)
     return currentTime.format(formatter)
 }
 

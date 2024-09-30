@@ -6,22 +6,22 @@ import com.google.firebase.firestore.FieldValue
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
-import com.litecodez.tracksc.createFile
-import com.litecodez.tracksc.getToast
+import com.litecodez.tracksc.getCurrentDate
+import com.litecodez.tracksc.getCurrentTime
 import com.litecodez.tracksc.home
 import com.litecodez.tracksc.login
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.OutcomeModel
 import com.litecodez.tracksc.models.TagsModel
+import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.profile
-import com.litecodez.tracksc.readImagesFile
+import com.litecodez.tracksc.savePreferences
 import com.litecodez.tracksc.toByteArray
 import com.litecodez.tracksc.toMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -213,6 +213,9 @@ class Operator(
             if(firstErrorModel.isError){
                 callback(firstErrorModel)
             }else{
+                savePreferences("minorColor","0xFFBBDEFB",context)
+                savePreferences("majorColor","0xFF3949AB",context)
+                savePreferences("textThemeColor","0xFFFFFFFF",context)
                 contentProvider.userProfile.value = userModel
                 contentRepository.uploadImage(
                     bucket = Databases.Buckets.USER_PROFILE_IMAGES,
@@ -287,6 +290,14 @@ class Operator(
                 )
             }
         }
+    }
+
+    fun sendConnectionRequest(request: TrackConnectionRequestModel){
+        contentRepository.createDocument(
+            collectionPath = Databases.Collections.CONNECTION_REQUESTS,
+            documentId = getCurrentDate() + "~" + getCurrentTime(),
+            data = request.toMap()
+        ){}
     }
 }
 

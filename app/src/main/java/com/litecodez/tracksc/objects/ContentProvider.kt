@@ -3,6 +3,7 @@ package com.litecodez.tracksc.objects
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import com.google.firebase.auth.FirebaseUser
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.LocalImages
@@ -29,6 +30,8 @@ class ContentProvider() {
     val loadedImageBytes = mutableStateMapOf<String, ByteArray>()
     val notificationCounter = mutableStateOf(mapOf<String,Int>())
     val requestedConnections = mutableStateOf(listOf<TrackConnectionRequestModel>())
-
+    val majorThemeColor = mutableStateOf(Color(0xFF3949AB))
+    val minorThemeColor = mutableStateOf(Color(0xFFBBDEFB))
+    val textThemeColor = mutableStateOf(Color(0xFFFFFFFF))
 
 }

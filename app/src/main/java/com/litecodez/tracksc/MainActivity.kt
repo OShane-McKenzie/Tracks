@@ -25,7 +25,6 @@ import com.litecodez.tracksc.ui.theme.TracksTheme
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
-import com.litecodez.tracksc.services.ConversationService
 import android.provider.Settings
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -59,6 +58,25 @@ class MainActivity : ComponentActivity() {
         requestPermission()
 
         enableEdgeToEdge()
+        try {
+            val minor = loadPreferences(applicationContext, "minorColor", "0xFFAC9D9D")
+                .trim()
+                .replace("0x", "")
+                .toLong(16)
+            val major = loadPreferences(applicationContext, "majorColor", "0xFFB17E01")
+                .trim()
+                .replace("0x", "")
+                .toLong(16)
+            val textTheme = loadPreferences(applicationContext, "textThemeColor", "0xFF000000")
+                .trim()
+                .replace("0x", "")
+                .toLong(16)
+            contentProvider.majorThemeColor.value = Color(major)
+            contentProvider.minorThemeColor.value = Color(minor)
+            contentProvider.textThemeColor.value = Color(textTheme)
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
         setContent {
 
             TracksTheme {

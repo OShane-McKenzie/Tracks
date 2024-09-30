@@ -114,7 +114,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
         Controller.isChatContainerOpen.value = true
     }
     LaunchedEffect(Controller.reloadMessage.value) {
-        if (wasMessageDeleted) {
+        if (wasMessageDeleted && messages.value.isNotEmpty()) {
             listState.animateScrollToItem(index = messages.value.lastIndex)
             wasMessageDeleted = false
         }
@@ -124,7 +124,10 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             listState.animateScrollToItem(listState.layoutInfo.totalItemsCount - 1)
             isFirstTimeLaunch = false
         }
-
+        val isMessageListEmpty = messages.value.isEmpty()
+        if (isMessageListEmpty){
+            messageListReady = true
+        }
         updateNotificationStatus(contentProvider, contentRepository)
     }
 
@@ -144,7 +147,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     LaunchedEffect(
         messageListReady
     ) {
-        if(messageListReady){
+        if(messageListReady && messages.value.isNotEmpty()){
             scope.launch {
                 listState.scrollToItem(messages.value.lastIndex)
                 delay(200)
@@ -152,6 +155,8 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 delay(200)
                 removeMask = true
             }
+        }else if(messages.value.isEmpty()){
+            removeMask = true
         }
     }
     Box(modifier = modifier) {
@@ -193,9 +198,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
 
                 if (index == messages.value.lastIndex) {
                     Spacer(modifier = Modifier.height(50.dp))
-
                     messageListReady = true
-
                 }
             }
 

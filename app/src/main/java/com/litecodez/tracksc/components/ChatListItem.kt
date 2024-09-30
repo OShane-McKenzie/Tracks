@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,7 +77,10 @@ fun ChatListItem(
     }
     val interlocutor by remember(getChatModel) {
         derivedStateOf {
-            getChatModel.content.find { it.sender != getUserUid() }?.senderName ?: "Unknown"
+            //getChatModel.content.find { it.sender != getUserUid() }?.senderName ?: "Unknown"
+            contentProvider.tags.value.find{
+                getChatModel.owners.contains(it.userId) && it.userId != getUserUid()
+            }?.name?:"Unknown"
         }
     }
 
@@ -104,7 +108,7 @@ fun ChatListItem(
     LaunchedEffect(getChatModel) {
         chatImage = when (getChatModel.ownershipModel) {
             TCDataTypes.OwnershipType.MULTI -> getChatModel.conversationName
-            TCDataTypes.OwnershipType.DUAL -> getChatModel.content.find { it.sender != getUserUid() }?.sender ?: "Unknown"
+            TCDataTypes.OwnershipType.DUAL -> getChatModel.owners.find { it != getUserUid() } ?: "Unknown"
             else -> getUserUid() ?: "unknown"
         }
 
@@ -132,7 +136,7 @@ fun ChatListItem(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(
-                    color = Color(0xFFE0E0DC),
+                    color = contentProvider.minorThemeColor.value,
                     shape = RoundedCornerShape(5)
                 )
                 .padding(3.dp)
@@ -176,7 +180,9 @@ fun ChatListItem(
                         TCDataTypes.OwnershipType.DUAL -> interlocutor
                         else -> userName
                     },
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    maxLines = 1,
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(5.dp))
 
@@ -189,7 +195,10 @@ fun ChatListItem(
                             ) {
                                 Text(
                                     text = getChatModel.content.lastOrNull()?.content ?: "",
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                                 )
                             }
                         }
@@ -199,7 +208,8 @@ fun ChatListItem(
                             ) {
                                 Text(
                                     text = "\uD83D\uDCF7",
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black
                                 )
                             }
                         }
@@ -209,7 +219,8 @@ fun ChatListItem(
                             ) {
                                 Text(
                                     text = "\uD83C\uDFA5",
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = contentProvider.textThemeColor.value
                                 )
                             }
                         }
@@ -219,7 +230,8 @@ fun ChatListItem(
                             ) {
                                 Text(
                                     text = "\uD83C\uDFA7",
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = contentProvider.textThemeColor.value
                                 )
                             }
                         }
@@ -229,7 +241,9 @@ fun ChatListItem(
                             ) {
                                 Text(
                                     text = "No messages",
-                                    fontWeight = FontWeight.ExtraBold
+                                    fontWeight = FontWeight.Thin,
+                                    fontStyle = FontStyle.Italic,
+                                    color = contentProvider.textThemeColor.value
                                 )
                             }
                         }

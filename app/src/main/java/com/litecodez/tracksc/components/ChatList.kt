@@ -1,5 +1,6 @@
 package com.litecodez.tracksc.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.objects.Controller
+import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -38,7 +40,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun ChatList(modifier: Modifier = Modifier) {
+fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
 
     var conversations by remember { mutableStateOf(contentProvider.conversations.value) }
 
@@ -53,12 +55,16 @@ fun ChatList(modifier: Modifier = Modifier) {
     }
 
     Box(modifier = modifier.fillMaxSize()) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .align(Alignment.TopCenter)
+                .align(Alignment.TopCenter),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHTY_NINE.dp))
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,6 +84,7 @@ fun ChatList(modifier: Modifier = Modifier) {
                 }
             }
         }
+        TagsFilter(operator = operator, modifier = Modifier.align(Alignment.TopCenter))
     }
 }
 

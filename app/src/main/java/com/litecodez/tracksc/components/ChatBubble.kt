@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.contentRepository
@@ -160,9 +162,9 @@ fun ChatBubble(modifier: Modifier = Modifier,
                             .wrapContentHeight(),
                         colors = CardDefaults.cardColors().copy(
                             containerColor = if (TCDataTypes.UserType.isThisUser(message.sender)) {
-                                lightPurple
+                                contentProvider.majorThemeColor.value
                             } else {
-                                lightPink
+                                contentProvider.minorThemeColor.value
                             },
                             contentColor = Color.Black
                         ),
@@ -179,7 +181,14 @@ fun ChatBubble(modifier: Modifier = Modifier,
                                     markdown = message.content,
                                     isTextSelectable = true,
                                     linkColor = Color.Blue,
-                                    modifier = Modifier.padding(13.dp)
+                                    modifier = Modifier.padding(13.dp),
+                                    style = LocalTextStyle.current.copy(
+                                        color = if (TCDataTypes.UserType.isThisUser(message.sender)){
+                                            contentProvider.textThemeColor.value
+                                        }else{
+                                            Color.Black
+                                        }
+                                    )
                                 )
                             }
 
@@ -214,8 +223,11 @@ fun ChatBubble(modifier: Modifier = Modifier,
                     Text(
                         message.timestamp.split(".")[0],
                         fontSize = 9.sp,
-                        color = Color.Gray
-
+                        color = if (TCDataTypes.UserType.isThisUser(message.sender)){
+                            Color.LightGray
+                        }else{
+                            Color.Gray
+                        }
                     )
                 }
             }

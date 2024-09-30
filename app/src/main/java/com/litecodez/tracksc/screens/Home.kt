@@ -1,12 +1,17 @@
 package com.litecodez.tracksc.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.litecodez.tracksc.components.ChatList
+import com.litecodez.tracksc.components.ThemeSelector
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.objects.AuthenticationManager
@@ -53,6 +58,15 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
         }
         Initializer.initServices(context)
     }
-    ChatList()
+    Box(modifier = Modifier.fillMaxSize()){
+        ChatList(
+            modifier = Modifier.fillMaxSize().align(Alignment.TopCenter),
+            operator = operator
+        )
+        ThemeSelector(
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
 }
 
