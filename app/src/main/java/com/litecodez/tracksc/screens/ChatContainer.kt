@@ -2,6 +2,7 @@ package com.litecodez.tracksc.screens
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -45,6 +50,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.litecodez.tracksc.R
@@ -54,7 +60,9 @@ import com.litecodez.tracksc.components.ChatBubble
 import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.ImageAnimation
 import com.litecodez.tracksc.components.MessageInput
+import com.litecodez.tracksc.components.NavigationDrawer
 import com.litecodez.tracksc.components.SimpleAnimator
+import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
@@ -66,6 +74,7 @@ import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserName
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
+import com.litecodez.tracksc.keyFor
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
@@ -79,6 +88,7 @@ import com.litecodez.tracksc.objects.MediaDeleteRequest
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.objects.Watchers
+import com.litecodez.tracksc.savePreferences
 import com.litecodez.tracksc.sendImageMessage
 import com.litecodez.tracksc.then
 import com.litecodez.tracksc.toByteArray
@@ -100,6 +110,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     var showDeleteMessageDialog by rememberSaveable { mutableStateOf(false) }
     var selectedMessageIndex by rememberSaveable { mutableIntStateOf(-1) }
     var wasMessageDeleted by rememberSaveable { mutableStateOf(false) }
+    var showNavigationDrawer by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var messageListReady by rememberSaveable {
@@ -161,47 +172,57 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     }
     Box(modifier = modifier) {
 
-        AsyncImage(
+        Image(
             modifier = Modifier.fillMaxSize(),
-            model = R.drawable.tracks_bg_2,
+            painter = painterResource(contentProvider.wallpaper.intValue),
             contentScale = ContentScale.FillBounds,
             contentDescription = ""
         )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(fraction = 0.92f)
-                .background(color = Color.White.copy(alpha = 0.0f), shape = RoundedCornerShape(3))
-                .padding(top = 21.dp)
-                .align(Alignment.TopCenter),
-            state = listState,
-        ) {
-            itemsIndexed(
-                items = messages.value,
-                key = { _, message -> message.timestamp }
-            ) { index, message ->
-                if (index == 0) {
-                    Spacer(modifier = Modifier.height(50.dp))
-                }
-
-                ChatBubbleWrapper(
-                    message = message,
-                    index = index,
-                    onDeleted = {
-                        selectedMessageIndex = it
-                        showDeleteMessageDialog = true
-                    },
-                    onReactionUpdated = { reactionList ->
-                        updateMessageReactions(contentProvider, operator, index, reactionList)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.TWENTY_ONE.dp))
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(fraction = 0.92f)
+                    .background(
+                        color = Color.White.copy(alpha = 0.0f),
+                        shape = RoundedCornerShape(3)
+                    )
+                    .padding(top = 21.dp),
+                state = listState,
+                verticalArrangement = Arrangement.Top
+            ) {
+                itemsIndexed(
+                    items = messages.value,
+                    key = { _, message -> message.timestamp }
+                ) { index, message ->
+                    if (index == 0) {
+                        Spacer(modifier = Modifier.height(50.dp))
                     }
-                )
 
-                if (index == messages.value.lastIndex) {
-                    Spacer(modifier = Modifier.height(50.dp))
-                    messageListReady = true
+                    ChatBubbleWrapper(
+                        message = message,
+                        index = index,
+                        onDeleted = {
+                            selectedMessageIndex = it
+                            showDeleteMessageDialog = true
+                        },
+                        onReactionUpdated = { reactionList ->
+                            updateMessageReactions(contentProvider, operator, index, reactionList)
+                        }
+                    )
+
+                    if (index == messages.value.lastIndex) {
+                        Spacer(modifier = Modifier.height(50.dp))
+                        messageListReady = true
+                    }
                 }
-            }
 
+            }
         }
 
         MessageInput(
@@ -251,6 +272,50 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator()
+            }
+        }
+        NavigationDrawer(
+            showDrawer = showNavigationDrawer,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxHeight()
+                .fillMaxWidth(0.7f)
+        ){
+            showNavigationDrawer = it
+        }
+
+        Column(
+            modifier = Modifier.align(Alignment.TopStart).padding(TCDataTypes.Fibonacci.EIGHT.dp)
+        ){
+            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.TWENTY_ONE.dp))
+            IconButton(
+                onClick = {
+                    showNavigationDrawer = !showNavigationDrawer
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = contentProvider.textThemeColor.value,
+                    modifier = Modifier.background(
+                        color = contentProvider.majorThemeColor.value.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
+                    )
+                )
+            }
+        }
+
+        if(Controller.showWallpaperSelector.value){
+            WallpaperSelector(
+                modifier = Modifier.fillMaxSize().align(Alignment.Center)
+            ){
+                Controller.showWallpaperSelector.value = false
+                contentProvider.wallpaper.intValue = it
+                savePreferences(
+                    context = context,
+                    key = "wallpaper",
+                    value = contentProvider.wallpaperMap.keyFor(it)?:"one"
+                )
             }
         }
     }

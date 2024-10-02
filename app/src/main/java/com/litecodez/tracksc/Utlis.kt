@@ -546,7 +546,9 @@ fun String.stringToUniqueInt(): Int {
     // Process each character, join the results, and convert to Int
     return lastFour.map { letterToPosition(it) }.joinToString("").toInt()
 }
-
+fun Map<String, Any>.keyFor(value: Any): String? {
+    return this.entries.find { it.value == value }?.key
+}
 
 //================================================================
 // Other functions

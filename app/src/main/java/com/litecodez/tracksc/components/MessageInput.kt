@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
+import com.litecodez.tracksc.contentProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import network.chaintech.cmpimagepickncrop.CMPImagePickNCropDialog
@@ -76,6 +78,7 @@ fun MessageInput(
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(0.dp)
                 .background(color = Color.White.copy(alpha = 0.0f), shape = CircleShape)
                 .weight(0.8f)
                 .focusRequester(focusRequester),
@@ -86,6 +89,10 @@ fun MessageInput(
             onValueChange = {
                 message = it
             },
+            colors = OutlinedTextFieldDefaults.colors().copy(
+                focusedContainerColor = contentProvider.majorThemeColor.value.copy(alpha = 0.6f),
+                focusedTextColor = contentProvider.textThemeColor.value,
+            )
         )
         // attachment button
         IconButton(

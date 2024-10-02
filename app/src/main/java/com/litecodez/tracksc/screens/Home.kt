@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.litecodez.tracksc.components.ChatList
 import com.litecodez.tracksc.components.ThemeSelector
+import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
+import com.litecodez.tracksc.keyFor
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Operator
 
@@ -22,6 +24,7 @@ import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.objects.TCDataTypes
+import com.litecodez.tracksc.savePreferences
 import com.litecodez.tracksc.toMap
 import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerHostState
 import kotlinx.coroutines.delay
@@ -60,13 +63,11 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
     }
     Box(modifier = Modifier.fillMaxSize()){
         ChatList(
-            modifier = Modifier.fillMaxSize().align(Alignment.TopCenter),
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.TopCenter),
             operator = operator
         )
-        ThemeSelector(
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
-
 }
 

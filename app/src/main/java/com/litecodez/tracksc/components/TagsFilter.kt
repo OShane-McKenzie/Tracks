@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ActivityScenario.launch
 import com.litecodez.tracksc.contentProvider
@@ -69,7 +70,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
         OutlinedTextField(
             value = text,
             placeholder = {
-                Text(text = "Discover people")
+                Text(text = "Discover people and groups", fontStyle = FontStyle.Italic)
             },
             onValueChange = {
                 text = it
@@ -146,6 +147,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                                 Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHT.dp))
                             }
                         }
+                       // VerticalScrollbar()
                     }
                 }
             }

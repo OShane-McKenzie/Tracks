@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import com.google.firebase.auth.FirebaseUser
+import com.litecodez.tracksc.R
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.LocalImages
 import com.litecodez.tracksc.models.NotificationModel
@@ -33,5 +34,15 @@ class ContentProvider() {
     val majorThemeColor = mutableStateOf(Color(0xFF3949AB))
     val minorThemeColor = mutableStateOf(Color(0xFFBBDEFB))
     val textThemeColor = mutableStateOf(Color(0xFFFFFFFF))
-
+    val wallpaperMap = mapOf(
+        "one" to R.drawable.tracks_bg_1,
+        "two" to R.drawable.tracks_bg_2,
+        "three" to R.drawable.tracks_bg_3,
+        "four" to R.drawable.tracks_bg_4,
+        "five" to R.drawable.tracks_bg_5,
+        "six" to R.drawable.tracks_bg_6,
+        "seven" to R.drawable.tracks_bg_7,
+        "eight" to R.drawable.tracks_bg_8
+    )
+    val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_1)
 }
