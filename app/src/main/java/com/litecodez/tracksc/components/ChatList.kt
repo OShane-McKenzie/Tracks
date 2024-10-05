@@ -49,7 +49,6 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     LaunchedEffect(Controller.reloadList.value) {
-        conversations = listOf()
         delay(10)
         conversations = contentProvider.conversations.value
         localReload = !localReload
@@ -78,14 +77,16 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
                     key(conversation.id) {
                         val setIndex by remember { mutableIntStateOf(index) }
                         ChatListItemWrapper(chat = conversation, index = setIndex) {
-                            //contentProvider.currentChat.value = conversation
                             appNavigator.setViewState(chatContainer)
                         }
                     }
                 }
             }
         }
-        TagsFilter(operator = operator, modifier = Modifier.align(Alignment.TopCenter).wrapContentSize())
+        TagsFilter(
+            operator = operator,
+            modifier = Modifier.align(Alignment.TopCenter).wrapContentSize()
+        )
     }
 }
 

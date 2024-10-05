@@ -1,6 +1,7 @@
 package com.litecodez.tracksc.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -9,12 +10,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.litecodez.tracksc.R
+import com.litecodez.tracksc.appNavigator
+import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatList
 import com.litecodez.tracksc.components.ThemeSelector
 import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
+import com.litecodez.tracksc.getToast
+import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.keyFor
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Operator
@@ -59,9 +67,38 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 }
             }
         }
+
         Initializer.initServices(context)
+
+        contentProvider.chatIdFromNotification.value.ifNotNull {
+            //getToast(context, "ChatId: $it")
+            contentProvider.currentChat.value = contentProvider.conversations.value.find { chat ->
+                chat.id == it
+            }
+            contentProvider.currentChat.value.ifNotNull {
+                appNavigator.setViewState(chatContainer)
+            }
+        }
+    }
+
+    LaunchedEffect(contentProvider.chatIdFromNotification.value) {
+        contentProvider.chatIdFromNotification.value.ifNotNull {
+            //getToast(context, "ChatId: $it")
+            contentProvider.currentChat.value = contentProvider.conversations.value.find { chat ->
+                chat.id == it
+            }
+            contentProvider.currentChat.value.ifNotNull {
+                appNavigator.setViewState(chatContainer)
+            }
+        }
     }
     Box(modifier = Modifier.fillMaxSize()){
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = painterResource(R.drawable.tracks_bg_9),
+            contentScale = ContentScale.FillBounds,
+            contentDescription = ""
+        )
         ChatList(
             modifier = Modifier
                 .fillMaxSize()

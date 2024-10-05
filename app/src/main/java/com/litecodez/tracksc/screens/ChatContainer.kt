@@ -120,6 +120,10 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     var removeMask by rememberSaveable {
         mutableStateOf(false)
     }
+    LaunchedEffect(true) {
+        //getToast(context, "${ contentProvider.currentChat.value?.id }")
+        contentProvider.chatIdFromNotification.value = null
+    }
     LaunchedEffect(Unit) {
         updateNotificationStatus(contentProvider, contentRepository)
         Controller.isChatContainerOpen.value = true
@@ -285,7 +289,9 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
         }
 
         Column(
-            modifier = Modifier.align(Alignment.TopStart).padding(TCDataTypes.Fibonacci.EIGHT.dp)
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(TCDataTypes.Fibonacci.EIGHT.dp)
         ){
             Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.TWENTY_ONE.dp))
             IconButton(
@@ -307,7 +313,12 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
 
         if(Controller.showWallpaperSelector.value){
             WallpaperSelector(
-                modifier = Modifier.fillMaxSize().align(Alignment.Center)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center),
+                onDismiss = {
+                    Controller.showWallpaperSelector.value = false
+                }
             ){
                 Controller.showWallpaperSelector.value = false
                 contentProvider.wallpaper.intValue = it
@@ -532,6 +543,7 @@ private fun handleMessageDeletion(context: Context, contentProvider: ContentProv
 
 private fun cleanupConversation(contentProvider: ContentProvider, conversationWatcher: Watchers) {
     try {
+        contentProvider.chatIdFromNotification.value = null
         contentProvider.currentChat.value?.let { chat ->
             conversationWatcher.stopWatcher(chat.id)
         }

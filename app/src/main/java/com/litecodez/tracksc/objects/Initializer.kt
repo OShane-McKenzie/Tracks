@@ -11,6 +11,7 @@ import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.services.ConversationService
+import com.litecodez.tracksc.services.TCConnectionService
 import com.litecodez.tracksc.services.TCNotificationService
 import com.litecodez.tracksc.then
 import com.litecodez.tracksc.toMessageModel
@@ -179,6 +180,13 @@ object Initializer {
             context.startService(intent2)
             Controller.isService2Initialized.value = true
         }
+
+        if (!Controller.isService3Initialized.value) {
+            val activity = context as Activity
+            val intent2 = Intent(activity, TCConnectionService::class.java)
+            context.startService(intent2)
+            Controller.isService3Initialized.value = true
+        }
     }
 
     fun initConversations(){
@@ -206,6 +214,7 @@ object Initializer {
                 }
             }
             contentProvider.conversations.value = conversations
+            Controller.reloadList.value = !Controller.reloadList.value
         }
     }
 }

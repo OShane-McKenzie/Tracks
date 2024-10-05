@@ -19,6 +19,7 @@ import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
+import com.litecodez.tracksc.launchers.ConversationLauncher
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
@@ -30,6 +31,7 @@ import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.stringToUniqueInt
 import com.litecodez.tracksc.toListMap
 import com.litecodez.tracksc.toNotificationModel
+import io.ktor.util.date.getTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -140,19 +142,27 @@ class TCNotificationService : LifecycleService() {
             TCDataTypes.MessageType.VIDEO -> "Sent a video"
             else -> "Sent an audio"
         }
-        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+        val notificationId = getTimeMillis().toInt() // Or generate some unique ID
+
+        val notificationIntent = Intent(this, ConversationLauncher::class.java).apply {
             putExtra("ACTION", chatId)
+            putExtra("NOTIFICATION_ID", notificationId)  // Pass notificationId to ConversationLauncher
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
-        val notificationId = message.sender.stringToUniqueInt()
         val pendingIntent = PendingIntent.getActivity(this, notificationId, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+
         val notification = Notification.Builder(this, "TC_NOTIFICATION_CHANNEL")
             .setSmallIcon(R.drawable.tc2)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(pendingIntent)
+            .setAutoCancel(true)  // This auto-cancels the notification after tap
             .build()
+
         notificationManager.notify(notificationId, notification)
     }
+
+
 
     private fun handleNotificationError(notification: NotificationModel, error: Exception) {
         error.printStackTrace()

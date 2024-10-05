@@ -38,12 +38,19 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Tracks">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".launchers.ConversationLauncher"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Tracks"
+            android:exported="false">
         </activity>
         <service
             android:name=".services.ConversationService"

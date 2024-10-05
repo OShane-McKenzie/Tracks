@@ -45,4 +45,6 @@ class ContentProvider() {
         "eight" to R.drawable.tracks_bg_8
     )
     val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_1)
+    val chatIdFromNotification = mutableStateOf<String?>(null)
+    val intentId = mutableStateOf("")
 }

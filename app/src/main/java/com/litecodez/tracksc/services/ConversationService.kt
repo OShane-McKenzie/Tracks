@@ -45,7 +45,9 @@ class ConversationService : LifecycleService() {
             if (conversationWatcher.activeListeners.containsKey(chatId)) {
                 updateCurrentChat(data)
             } else {
-                contentProvider.currentChat.value = null
+                if(contentProvider.chatIdFromNotification.value.isNullOrEmpty()) {
+                    contentProvider.currentChat.value = null
+                }
             }
         }
     }

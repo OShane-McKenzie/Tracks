@@ -6,13 +6,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,7 +33,7 @@ import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.TCDataTypes
 
 @Composable
-fun WallpaperSelector(modifier: Modifier = Modifier, onSelect: (Int) -> Unit = {}){
+fun WallpaperSelector(modifier: Modifier = Modifier, onDismiss:() -> Unit = {},onSelect: (Int) -> Unit = {}){
     val interactionSource = remember { MutableInteractionSource() }
     val scrollState = rememberScrollState()
     val wallpaperList = remember {
@@ -39,41 +45,55 @@ fun WallpaperSelector(modifier: Modifier = Modifier, onSelect: (Int) -> Unit = {
             R.drawable.tracks_bg_5,
             R.drawable.tracks_bg_6,
             R.drawable.tracks_bg_7,
-            R.drawable.tracks_bg_8,
+            R.drawable.tracks_bg_8
         )
     }
     SimpleAnimator(
         style = AnimationStyle.SCALE_IN_CENTER,
     ){
-        Row(
-            modifier = modifier
-                .background(
-                    color = Color.Black.copy(alpha = 0.7f)
-                )
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null
-                ) {
+        Box(){
+            Row(
+                modifier = modifier
+                    .background(
+                        color = Color.Black.copy(alpha = 0.7f)
+                    )
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
 
+                    }
+                    .padding(TCDataTypes.Fibonacci.EIGHT.dp)
+                    .horizontalScroll(scrollState),
+                horizontalArrangement = Arrangement.spacedBy(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                wallpaperList.forEach {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = "wallpaper",
+                        modifier = Modifier
+                            .fillMaxSize(0.6f)
+                            .clip(RoundedCornerShape(TCDataTypes.Fibonacci.FIVE.dp))
+                            .clickable {
+                                onSelect(it)
+                            },
+                        contentScale = ContentScale.FillBounds
+                    )
                 }
-                .padding(TCDataTypes.Fibonacci.EIGHT.dp)
-                .horizontalScroll(scrollState),
-            horizontalArrangement = Arrangement.spacedBy(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            wallpaperList.forEach {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = "wallpaper",
-                    modifier = Modifier
-                        .fillMaxSize(0.6f)
-                        .clip(RoundedCornerShape(TCDataTypes.Fibonacci.FIVE.dp))
-                        .clickable {
-                            onSelect(it)
-                        },
-                    contentScale = ContentScale.FillBounds
-                )
+            }
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
+                horizontalArrangement = Arrangement.End
+            ){
+                IconButton(onClick = { onDismiss.invoke() }) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+                }
             }
         }
     }

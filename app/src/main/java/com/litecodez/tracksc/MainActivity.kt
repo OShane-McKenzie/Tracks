@@ -1,5 +1,6 @@
 package com.litecodez.tracksc
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -26,6 +27,7 @@ import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
 import android.provider.Settings
+import androidx.annotation.CallSuper
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -76,6 +78,7 @@ class MainActivity : ComponentActivity() {
             contentProvider.minorThemeColor.value = Color(minor)
             contentProvider.textThemeColor.value = Color(textTheme)
             contentProvider.wallpaper.intValue = contentProvider.wallpaperMap[wallpaper]?:R.drawable.tracks_bg_1
+
         }catch (e:Exception){
             e.printStackTrace()
         }
@@ -151,5 +154,6 @@ class MainActivity : ComponentActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         }
     }
+
 }
 

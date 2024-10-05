@@ -531,8 +531,8 @@ fun String.toBase64ByteArray(): ByteArray {
 }
 
 fun String.stringToUniqueInt(): Int {
-    // Take the last 4 characters of the input string
-    val lastFour = this.takeLast(4)
+    // Take the first character and the last 3 characters of the input string
+    val firstAndLastThree = this.first() + this.takeLast(3)
 
     // Function to convert a letter to its position in the alphabet
     fun letterToPosition(char: Char): String {
@@ -544,8 +544,9 @@ fun String.stringToUniqueInt(): Int {
     }
 
     // Process each character, join the results, and convert to Int
-    return lastFour.map { letterToPosition(it) }.joinToString("").toInt()
+    return firstAndLastThree.map { letterToPosition(it) }.joinToString("").toInt()
 }
+
 fun Map<String, Any>.keyFor(value: Any): String? {
     return this.entries.find { it.value == value }?.key
 }

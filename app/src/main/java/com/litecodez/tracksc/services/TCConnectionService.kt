@@ -10,6 +10,7 @@ import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
+import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.tcConnectionWatcher
@@ -76,7 +77,10 @@ class TCConnectionService : LifecycleService() {
                 field = "requests",
                 data = outcomes,
                 documentId = userRequestOutcomeDoc
-            )
+            ){
+                _, _ ->
+
+            }
         }
     }
 
