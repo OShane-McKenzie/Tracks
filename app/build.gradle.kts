@@ -79,7 +79,7 @@ dependencies {
     implementation (libs.coil.compose)
     implementation (libs.coil.gif)
     implementation (libs.play.services.auth)
-    implementation(libs.youtubeplayer.compose)
+    //implementation(libs.youtubeplayer.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.server.core)
     implementation (libs.androidx.material.icons.extended)
@@ -94,9 +94,25 @@ dependencies {
     implementation(libs.cmp.image.pick.n.crop)
     implementation(libs.autolinktext)
     implementation (libs.compose.markdown)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.module.kotlin)
+    implementation (libs.gson)
+    //implementation (libs.core)
+    //implementation (libs.youtube.jextractor)
 
-    implementation ("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.0")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.exoplayer.dash)
+    implementation(libs.androidx.media3.ui)
+
+    implementation (libs.androidx.junit.v115)
+    androidTestImplementation (libs.androidx.espresso.core.v350)
+    //implementation ("com.squareup.okhttp3:logging-interceptor:3.12.2")
+    //implementation ("com.squareup.retrofit2:retrofit:2.7.2")
+    //implementation ("com.squareup.retrofit2:converter-gson:2.7.2")
+    //implementation ("com.github.tony19:named-regexp:0.2.5")
+    //implementation (libs.kotlin.youtubeextractor)
+    //implementation ("com.github.evgenyneu:js-evaluator-for-android:v6.0.0")
+
 
     configurations.all {
         resolutionStrategy.force ("androidx.test.ext:junit:1.1.5")

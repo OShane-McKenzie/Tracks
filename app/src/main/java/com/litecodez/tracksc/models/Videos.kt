@@ -1,11 +1,14 @@
 package com.litecodez.tracksc.models
 
+import com.google.gson.annotations.SerializedName
+
 data class Videos(
-    var videos: List<Video> = listOf(
+    @SerializedName("videos") @JvmField var videos: List<Video> = listOf(
         Video(
             id = "_t0qtSKOpO4",
             title = "Chris Brown - Sensational ft. Davido Lojay",
-            genre = "Hip Hop/R&B"
+            genre = "Hip Hop/R&B",
+            artist = "Chris Brown",
         )
     )
 )

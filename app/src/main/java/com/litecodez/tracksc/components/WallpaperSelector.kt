@@ -51,7 +51,7 @@ fun WallpaperSelector(modifier: Modifier = Modifier, onDismiss:() -> Unit = {},o
     SimpleAnimator(
         style = AnimationStyle.SCALE_IN_CENTER,
     ){
-        Box(){
+        Box {
             Row(
                 modifier = modifier
                     .background(

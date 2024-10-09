@@ -1,5 +1,5 @@
 package com.litecodez.tracksc.models
-import kotlinx.serialization.*
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class EndPointData(

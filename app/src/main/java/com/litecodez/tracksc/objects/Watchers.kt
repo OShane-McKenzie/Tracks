@@ -1,9 +1,7 @@
 package com.litecodez.tracksc.objects
 
-import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.ListenerRegistration
-import com.litecodez.tracksc.getToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,8 +25,6 @@ class Watchers {
                     }
                 }
             activeListeners[target] = listenerRegistration
-        } else {
-            Log.d("Watcher", "Watcher for $target already exists.")
         }
     }
 

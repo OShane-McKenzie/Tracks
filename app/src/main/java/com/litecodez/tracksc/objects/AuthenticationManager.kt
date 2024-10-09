@@ -187,7 +187,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
                 if (task.isSuccessful) {
                     Controller.googleSignInProcessComplete.value = true
                     contentProvider.currentUser.value = FirebaseCenter.getAuth().currentUser
-                    isFirstLogin(){firstTimeLogin->
+                    isFirstLogin { firstTimeLogin->
                         Initializer.runInit(context, firstTimeLogin){
                             if(firstTimeLogin) {
                                 appNavigator.setViewState(

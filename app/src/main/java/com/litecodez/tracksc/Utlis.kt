@@ -11,17 +11,16 @@ import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.LocalImages
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
-import com.litecodez.tracksc.models.UserModel
-import com.litecodez.tracksc.objects.HasId
 import com.litecodez.tracksc.models.OutcomeModel
 import com.litecodez.tracksc.models.ReactionModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.models.TrackConnectionRequestModel
+import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.objects.Databases
+import com.litecodez.tracksc.objects.HasId
 import com.litecodez.tracksc.objects.MediaDeleteRequest
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.CompressorStreamFactory
-import org.intellij.lang.annotations.Pattern
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -597,12 +596,14 @@ fun getUserName():String{
 fun extractVideoId(link: String): OutcomeModel {
     val outcome = OutcomeModel()
 
-    // Validate the YouTube URL format
+    // Validate the YouTube URL formats
     val singleVideoPattern = "https://www\\.youtube\\.com/watch\\?v=([a-zA-Z0-9_-]{11})"
     val playlistVideoPattern = "https://www\\.youtube\\.com/watch\\?v=([a-zA-Z0-9_-]{11})&list=[a-zA-Z0-9_-]+"
+    val shortLinkPattern = "https://youtu\\.be/([a-zA-Z0-9_-]{11})"
 
     val singleVideoRegex = Regex(singleVideoPattern)
     val playlistVideoRegex = Regex(playlistVideoPattern)
+    val shortLinkRegex = Regex(shortLinkPattern)
 
     when {
         singleVideoRegex.matches(link) -> {
@@ -623,6 +624,15 @@ fun extractVideoId(link: String): OutcomeModel {
                 outcome.msg = "Failed to extract video ID from playlist link."
             }
         }
+        shortLinkRegex.matches(link) -> {
+            val matchResult = shortLinkRegex.find(link)
+            if (matchResult != null) {
+                outcome.msg = matchResult.groupValues[1]
+            } else {
+                outcome.isError = true
+                outcome.msg = "Failed to extract video ID from short link."
+            }
+        }
         else -> {
             outcome.isError = true
             outcome.msg = "Invalid YouTube link format."
@@ -631,6 +641,7 @@ fun extractVideoId(link: String): OutcomeModel {
 
     return outcome
 }
+
 
 fun nextVideo(){
     if(contentProvider.incrementer.intValue < contentProvider.currentPlaylist.value.size){

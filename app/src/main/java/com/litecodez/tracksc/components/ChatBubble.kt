@@ -45,8 +45,6 @@ import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
-import com.litecodez.tracksc.lightPink
-import com.litecodez.tracksc.lightPurple
 import com.litecodez.tracksc.models.ReactionModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
@@ -128,7 +126,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
             horizontalArrangement = if(TCDataTypes.UserType.isThisUser(message.sender)) Arrangement.End else Arrangement.Start
         ){
             if(TCDataTypes.UserType.isThisUser(message.sender)){
-                Column(){
+                Column {
                     IconButton(
                         onClick = {
                             showReactionPicker = !showReactionPicker
@@ -147,7 +145,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                     }
                 }
             }
-            Box(){
+            Box {
                 SimpleAnimator(style = AnimationStyle.UP){
                     Card(
                         modifier = Modifier
@@ -233,7 +231,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
             }
 
             if(!TCDataTypes.UserType.isThisUser(message.sender)){
-                Column(){
+                Column {
                     IconButton(
                         onClick = {
                             showReactionPicker = !showReactionPicker

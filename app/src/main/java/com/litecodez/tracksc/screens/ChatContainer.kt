@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,34 +33,26 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.Snapshot
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatBubble
 import com.litecodez.tracksc.components.CustomSnackBar
-import com.litecodez.tracksc.components.ImageAnimation
 import com.litecodez.tracksc.components.MessageInput
 import com.litecodez.tracksc.components.NavigationDrawer
-import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentProvider
@@ -75,11 +66,9 @@ import com.litecodez.tracksc.getUserName
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.keyFor
-import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.ReactionModel
-import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
@@ -90,7 +79,6 @@ import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.objects.Watchers
 import com.litecodez.tracksc.savePreferences
 import com.litecodez.tracksc.sendImageMessage
-import com.litecodez.tracksc.then
 import com.litecodez.tracksc.toByteArray
 import com.litecodez.tracksc.toListMap
 import com.litecodez.tracksc.toMap
@@ -144,8 +132,15 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             messageListReady = true
         }
         updateNotificationStatus(contentProvider, contentRepository)
-    }
 
+    }
+    LaunchedEffect(true) {
+        delay(1000)
+        if(!Controller.initialConversationWatchAcknowledged.value){
+            Controller.initialConversationWatchAcknowledged.value = true
+            Controller.mediaPlayerReady.value = true
+        }
+    }
     LaunchedEffect(true) {
         appNavigator.screenTerminationActionsList[chatContainer] = {
             try {
@@ -170,8 +165,12 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 delay(200)
                 removeMask = true
             }
+            if(contentProvider.nowPlaying.value.isNotEmpty()){
+                Controller.mediaPlayerReady.value = true
+            }
         }else if(messages.value.isEmpty()){
             removeMask = true
+
         }
     }
     Box(modifier = modifier) {
@@ -280,10 +279,11 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
         }
         NavigationDrawer(
             showDrawer = showNavigationDrawer,
+            operator = operator,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .fillMaxHeight()
-                .fillMaxWidth(0.7f)
+                .fillMaxWidth(0.9f)
         ){
             showNavigationDrawer = it
         }

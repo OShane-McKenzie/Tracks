@@ -155,7 +155,7 @@ class Operator(
             authenticationManager.signUpWithEmailAndPassword(email, password){ it ->
                 if(it){
                     if(contentProvider.currentUser.value!=null) {
-                        authenticationManager.sendEmailVerification(){ verificationSent ->
+                        authenticationManager.sendEmailVerification { verificationSent ->
                             if(verificationSent){
                                 Controller.emailVerificationResendable.value = true
                                 callback(
@@ -247,7 +247,7 @@ class Operator(
         contentRepository.updateDocument(
             collectionPath = Databases.Collections.CONVERSATIONS,
             documentId = id,
-            data = contentProvider.currentChat.value!!.toMap()
+            data = contentProvider.currentChat.value?.copy(currentMediaLink = contentProvider.nowPlaying.value)!!.toMap()
         ){
             success, error ->
             callback(success)

@@ -1,24 +1,16 @@
 package com.litecodez.tracksc.services
 
-import android.app.Service
 import android.content.Intent
-import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.conversationWatcher
-import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.models.ChatModel
-import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.toMessageModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ConversationService : LifecycleService() {
 
@@ -68,7 +60,14 @@ class ConversationService : LifecycleService() {
         if(Controller.isChatContainerOpen.value && contentProvider.currentChat.value?.id == updatedChat.id) {
             contentProvider.currentChat.value = updatedChat
             contentProvider.currentPlaylist.value = updatedChat.mediaLinks
-            contentProvider.nowPlaying.value = updatedChat.currentMediaLink
+            lifecycleScope.launch {
+                contentProvider.nowPlaying.value = ""
+                delay(20)
+                if(Controller.initialConversationWatchAcknowledged.value) {
+                    contentProvider.nowPlaying.value = updatedChat.currentMediaLink
+                    Controller.reloadMessage.value = !Controller.reloadMessage.value
+                }
+            }
         }
         Controller.reloadMessage.value = !Controller.reloadMessage.value
     }

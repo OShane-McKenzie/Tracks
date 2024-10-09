@@ -26,22 +26,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
-import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.TypeWriteText
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentRepository
-import com.litecodez.tracksc.login
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Operator
-import com.litecodez.tracksc.then
-import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManager){
@@ -49,6 +46,7 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
     val isVisible by rememberSaveable { mutableStateOf(false) }
     var showSnackBar by remember { mutableStateOf(false) }
     var snackBarInfo by remember { mutableStateOf("") }
+    val context = LocalContext.current
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
@@ -100,7 +98,7 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
         }
 
         LaunchedEffect(Unit){
-            contentRepository.getVideos {
+            contentRepository.getVideos(context = context) {
                 if(it.isError){
                     snackBarInfo = it.msg
                     showSnackBar = true

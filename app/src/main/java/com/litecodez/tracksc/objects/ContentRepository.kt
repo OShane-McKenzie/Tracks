@@ -1,11 +1,18 @@
 package com.litecodez.tracksc.objects
 
+import android.content.Context
+import android.util.JsonToken
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.gson.Gson
 import com.litecodez.tracksc.baseApi
 import com.litecodez.tracksc.contentProvider
+import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.models.ApiModel
 import com.litecodez.tracksc.models.ChatModel
@@ -27,12 +34,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 
-class ContentRepository() {
+class ContentRepository {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val mainScope = CoroutineScope(Dispatchers.Main)
     private val db = FirebaseCenter.getDatabase()
     private val storageRef = FirebaseCenter.getStorage()
     private val imageUrlCache: SnapshotStateMap<String, String> = mutableStateMapOf()
+    private val gson = Gson()
     val activeListeners = mutableListOf<String>()
     private var listenerRegistration: ListenerRegistration? = null
 
@@ -157,29 +165,139 @@ class ContentRepository() {
             onFailure(exception)
         }
     }
-    fun getVideos(callBack: (OutcomeModel) -> Unit){
+//    fun getVideos(fetchType: String = "remote", context: Context,callBack: (OutcomeModel) -> Unit) {
+//        val factory = JsonFactory()
+//        val mapper = ObjectMapper(factory).registerModule(
+//            KotlinModule.Builder().build()  // Use KotlinModule.Builder
+//        )
+//
+//        scope.launch {
+//            fetchApiData(
+//                apiModel = ApiModel(
+//                    base = baseApi,
+//                    endPoint = "/vids_v2.json"
+//                )
+//            ) {
+//                try {
+//                    val videos = mutableListOf<Video>()
+//
+//                    // Function to parse the video data using streaming
+//                    fun parseVideos(jsonData: String) {
+//                        val inputStream = jsonData.byteInputStream()
+//                        factory.createParser(inputStream).use { parser ->
+//                            while (parser.nextToken() != com.fasterxml.jackson.core.JsonToken.END_ARRAY) {
+//                                val video = mapper.readValue(parser, Video::class.java)
+//                                mainScope.launch { getToast(context, video.artist) }
+//                                videos.add(video)  // Add each video to the list
+//                            }
+//                        }
+//                    }
+//
+//                    // Use the appropriate data source based on fetchType
+//                    if (fetchType == "local") {
+//                        parseVideos(TCVideoData.getData())  // Parse local data
+//                    } else {
+//                        parseVideos(it)  // Parse remote data from the API
+//                    }
+//
+//                    // Update the content provider with the list of videos
+//                    contentProvider.videos.value = Videos(videos = videos)
+//
+//                    // Success callback
+//                    callBack(
+//                        OutcomeModel(
+//                            isError = false,
+//                            msg = "Videos fetched successfully"
+//                        )
+//                    )
+//
+//                } catch (e: Exception) {
+//                    mainScope.launch {
+//                        getToast(context, e.message.toString())
+//                    }
+//
+//                    e.printStackTrace()
+//                    // Error callback
+//                    callBack(
+//                        OutcomeModel(
+//                            isError = true,
+//                            msg = e.message.toString()
+//                        )
+//                    )
+//                }
+//            }
+//        }
+//    }
+
+//    fun getVideos(fetchType:String = "local", context: Context,callBack: (OutcomeModel) -> Unit){
+//        scope.launch {
+//            fetchApiData(
+//                apiModel = ApiModel(
+//                    base = baseApi,
+//                    endPoint = "/vids_v2.json"
+//                )
+//            ){
+//                try {
+//                    contentProvider.videos.value = if(fetchType == "REMOTE") {
+//                        Videos(videos = Json.decodeFromString<List<Video>>(TCVideoData.getData()))
+//                    }else{
+//                        Videos(videos = Json.decodeFromString<List<Video>>(it))
+//                    }
+//                    callBack(
+//                        OutcomeModel(
+//                            isError = false,
+//                            msg = "Videos fetched successfully"
+//                        )
+//                    )
+//                }catch (e:Exception){
+//                    mainScope.launch {
+//                        getToast(context, e.message.toString(), long = true)
+//                    }
+//                    e.printStackTrace()
+//                    callBack(
+//                        OutcomeModel(
+//                            isError = true,
+//                            msg = e.message.toString()
+//                        )
+//                    )
+    //gson.fromJson(it, Credits::class.java)
+//                }
+//            }
+//        }
+//    }
+
+        fun getVideos(fetchType:String = "remote", context: Context,callBack: (OutcomeModel) -> Unit){
         scope.launch {
             fetchApiData(
                 apiModel = ApiModel(
                     base = baseApi,
-                    endPoint = "/vids.json"
+                    endPoint = "/vids_v2.json"
                 )
             ){
                 try {
-                    contentProvider.videos.value = Videos(videos = Json.decodeFromString<List<Video>>(it))
+                    contentProvider.videos.value = if(fetchType == "local") {
+                        //Videos(videos = gson.fromJson(TCVideoData.getData(), Videos::class.java))
+                        gson.fromJson(TCVideoData.getData(), Videos::class.java)
+                    }else{
+                        //Videos(videos = gson.fromJson(it, Videos::class.java))
+                        gson.fromJson(it, Videos::class.java)
+                    }
                     callBack(
                         OutcomeModel(
-                        isError = false,
-                        msg = "Videos fetched successfully"
-                    )
+                            isError = false,
+                            msg = "Videos fetched successfully"
+                        )
                     )
                 }catch (e:Exception){
+                    mainScope.launch {
+                        getToast(context, e.message.toString(), long = true)
+                    }
                     e.printStackTrace()
                     callBack(
                         OutcomeModel(
-                        isError = true,
-                        msg = e.message.toString()
-                    )
+                            isError = true,
+                            msg = e.message.toString()
+                        )
                     )
                 }
             }

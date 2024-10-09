@@ -17,4 +17,7 @@ object Controller {
     val reloadList = mutableStateOf(false)
     val isChatContainerOpen = mutableStateOf(false)
     val showWallpaperSelector = mutableStateOf(false)
+    val mediaPlayerReady = mutableStateOf(false)
+    val isHomeLoaded = mutableStateOf(false)
+    val initialConversationWatchAcknowledged = mutableStateOf(false)
 }

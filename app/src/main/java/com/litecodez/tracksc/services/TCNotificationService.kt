@@ -4,11 +4,11 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.litecodez.tracksc.MainActivity
@@ -16,37 +16,30 @@ import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
-import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
-import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.launchers.ConversationLauncher
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.notificationWatcher
-import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.TCDataTypes
-import com.litecodez.tracksc.stringToUniqueInt
 import com.litecodez.tracksc.toListMap
 import com.litecodez.tracksc.toNotificationModel
 import io.ktor.util.date.getTimeMillis
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class TCNotificationService : LifecycleService() {
 
     private lateinit var notificationManager: NotificationManager
-
-
+    private val FOREGROUND_SERVICE_ID = 1001
+    private val FOREGROUND_CHANNEL_ID = "TC_FOREGROUND_CHANNEL"
 
     override fun onCreate() {
         super.onCreate()
         setupNotificationChannel()
+        startForegroundService()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -57,12 +50,48 @@ class TCNotificationService : LifecycleService() {
 
     private fun setupNotificationChannel() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(
-            "TC_NOTIFICATION_CHANNEL",
-            appName,
-            NotificationManager.IMPORTANCE_HIGH
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val foregroundChannel = NotificationChannel(
+                FOREGROUND_CHANNEL_ID,
+                "Foreground Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            notificationManager.createNotificationChannel(foregroundChannel)
+
+            val userNotificationChannel = NotificationChannel(
+                "TC_NOTIFICATION_CHANNEL",
+                appName,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(userNotificationChannel)
+        }
+    }
+
+    private fun startForegroundService() {
+        val notification = createForegroundNotification()
+        notification.flags = Notification.FLAG_ONGOING_EVENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(FOREGROUND_SERVICE_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+        } else {
+            startForeground(FOREGROUND_SERVICE_ID, notification)
+        }
+    }
+
+    private fun createForegroundNotification(): Notification {
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
         )
-        notificationManager.createNotificationChannel(channel)
+
+        return NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
+            .setContentTitle("Tracks Messaging Service")
+            .setContentText("Alive")
+            .setSmallIcon(R.drawable.tc2)
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .setContentIntent(pendingIntent)
+            .build()
     }
 
     private fun startNotificationMonitoring() {

@@ -1,6 +1,5 @@
 package com.litecodez.tracksc.launchers
 
-import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -8,8 +7,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.litecodez.tracksc.MainActivity
 import com.litecodez.tracksc.contentProvider
-import com.litecodez.tracksc.getToast
-import com.litecodez.tracksc.services.ConversationService
 
 class ConversationLauncher : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,22 +1,15 @@
 package com.litecodez.tracksc.services
 
-import android.app.Service
 import android.content.Intent
-import android.os.IBinder
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
-import com.litecodez.tracksc.ifNotNull
-import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.tcConnectionWatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class TCConnectionService : LifecycleService() {

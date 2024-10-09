@@ -17,25 +17,17 @@ import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatList
-import com.litecodez.tracksc.components.ThemeSelector
-import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
-import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.ifNotNull
-import com.litecodez.tracksc.keyFor
-import com.litecodez.tracksc.objects.AuthenticationManager
-import com.litecodez.tracksc.objects.Operator
-
 import com.litecodez.tracksc.models.TagsModel
+import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
+import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
-import com.litecodez.tracksc.savePreferences
 import com.litecodez.tracksc.toMap
-import io.github.ilyapavlovskii.multiplatform.youtubeplayer.YouTubePlayerHostState
-import kotlinx.coroutines.delay
 
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -44,7 +36,7 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val hostState = remember{ YouTubePlayerHostState() }
+
     LaunchedEffect(Unit){
         if(Controller.isDelayedProfileDocument.value){
             Initializer.initUserProfile(context){}
@@ -79,6 +71,7 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 appNavigator.setViewState(chatContainer)
             }
         }
+        Controller.isHomeLoaded.value = true
     }
 
     LaunchedEffect(contentProvider.chatIdFromNotification.value) {

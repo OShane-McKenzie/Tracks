@@ -430,7 +430,7 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                     Text(
                         modifier = Modifier.clickable {
                             showResendEmailVerification = false
-                            authenticationManager.sendEmailVerification() {
+                            authenticationManager.sendEmailVerification {
                                 if (it) {
                                     snackBarInfo = "Email verification sent"
                                     showSnackBar = true

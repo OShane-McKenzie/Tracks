@@ -22,8 +22,10 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -52,16 +54,28 @@
             android:theme="@style/Theme.Tracks"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".services.CustomSecurityManager"
+            android:theme="@style/Theme.Tracks"
+            android:exported="false">
+        </activity>
         <service
             android:name=".services.ConversationService"
             android:enabled="true"
             android:exported="false"
-            />
 
+            />
+        <service
+            android:name=".services.YouTubePlayerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"
+            />
         <service
             android:name=".services.TCNotificationService"
             android:enabled="true"
             android:exported="false"
+            android:foregroundServiceType="dataSync"
             />
         <service
             android:name=".services.TCConnectionService"

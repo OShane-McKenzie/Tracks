@@ -12,9 +12,10 @@ import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
+import com.litecodez.tracksc.models.Video
 import com.litecodez.tracksc.models.Videos
 
-class ContentProvider() {
+class ContentProvider {
     val currentUser = mutableStateOf<FirebaseUser?>(null)
     val videos = mutableStateOf(Videos())
     val imageByteArray = mutableStateOf<ByteArray?>(null)
@@ -34,6 +35,7 @@ class ContentProvider() {
     val majorThemeColor = mutableStateOf(Color(0xFF3949AB))
     val minorThemeColor = mutableStateOf(Color(0xFFBBDEFB))
     val textThemeColor = mutableStateOf(Color(0xFFFFFFFF))
+    val currentSong = mutableStateOf<Video?>(null)
     val wallpaperMap = mapOf(
         "one" to R.drawable.tracks_bg_1,
         "two" to R.drawable.tracks_bg_2,
