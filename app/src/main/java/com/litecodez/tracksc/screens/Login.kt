@@ -27,10 +27,14 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -51,8 +55,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
 import com.litecodez.tracksc.components.CustomSnackBar
@@ -140,7 +147,9 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
     var resetPasswordRequest by rememberSaveable {
         mutableStateOf(false)
     }
-
+    var processRunning by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(Controller.emailVerificationResendable.value){
         if(Controller.emailVerificationResendable.value){
             if(Controller.firstLaunch.value){
@@ -170,7 +179,6 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 )
             )
             .onGloballyPositioned {
-
                 startAnim = true
             }
     ){
@@ -291,6 +299,9 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
+            var showPassword by remember {
+                mutableStateOf(false)
+            }
             OutlinedTextField(
                 modifier = Modifier.onFocusChanged { focusState ->
                     inlineLogoAndName = focusState.isFocused
@@ -302,6 +313,22 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 },
                 label = {
                     Text(text = "Password")
+                },
+                maxLines = 1,
+                singleLine = true,
+                visualTransformation = if(!showPassword){
+                    PasswordVisualTransformation()
+                }else{
+                    VisualTransformation.None
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = if(showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = "Password visibility",
+                        modifier = Modifier.clickable {
+                            showPassword = !showPassword
+                        }
+                    )
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -331,6 +358,7 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                     contentColor = color3
                 ),
                 onClick = {
+                    processRunning = true
                     if(registerNewAccount){
                         operator.createAccountOperation(
                             email = emailText,
@@ -338,6 +366,7 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                         ){
                             snackBarInfo = it.msg
                             showSnackBar = true
+                            processRunning = false
                         }
                     }else {
                         operator.loginOperation(
@@ -347,6 +376,7 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                         ) {
                             snackBarInfo = it.msg
                             showSnackBar = it.isError
+                            processRunning = false
                         }
                     }
                     emailText = ""
@@ -377,11 +407,13 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                     contentColor = color3
                 ),
                 onClick = {
+                    processRunning = true
                     operator.loginOperation(
                         loginMethod = LoginMethod.GOOGLE
                     ){
                         snackBarInfo = it.msg
                         showSnackBar = it.isError
+                        processRunning = false
                     }
                 }
             ) {
@@ -523,6 +555,18 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 duration = 5000
             ){
                 showSnackBar = false
+            }
+        }
+        if (processRunning){
+            Dialog(onDismissRequest = { processRunning = false }) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ){
+                    CircularProgressIndicator()
+                    Text(text = "Please wait...")
+                }
             }
         }
 

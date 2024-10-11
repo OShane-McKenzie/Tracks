@@ -13,6 +13,7 @@ object TCDataTypes {
         const val VIDEO = "video"
         const val IMAGE = "image"
         const val AUDIO = "audio"
+        const val MEDIA_NOTIFICATION = "media_notification"
     }
 
     object UserType{

@@ -1,5 +1,6 @@
 package com.litecodez.tracksc.objects
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
@@ -8,28 +9,31 @@ import android.webkit.WebView
 
 
 class CustomWebView(context: Context) : WebView(context) {
+    @SuppressLint("MissingSuperCall")
     override fun onSaveInstanceState(): Parcelable {
-        val superState = super.onSaveInstanceState()
-        val bundle = Bundle()
-        // Save the superState but nullify the webViewState
-        bundle.putParcelable("superState", superState)
-        bundle.putParcelable("android:webViewState", null)
-        bundle.clear()
-        return bundle
+        // Return an empty Bundle instead of saving any state
+        return Bundle()
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onRestoreInstanceState(state: Parcelable?) {
-        if (state is Bundle) {
-            val superState = state.getParcelable<Parcelable>("superState")
-            super.onRestoreInstanceState(superState)
-        } else {
-            super.onRestoreInstanceState(state)
-        }
+        // Do nothing when restoring state
     }
 
-    override fun restoreState(inState: Bundle): WebBackForwardList? {
-        // Do nothing when restoring state to prevent restoring web history and other states
+    override fun saveState(outState: Bundle): WebBackForwardList? {
+        // Clear any existing data in the outState bundle
+        outState.clear()
+        // Return null to indicate no state was saved
         return null
     }
 
+    override fun restoreState(inState: Bundle): WebBackForwardList? {
+        // Do nothing when restoring state
+        return null
+    }
+
+    override fun loadUrl(url: String) {
+        // Prevent WebView from saving the URL to browser history
+        super.loadUrl(url, mapOf("X-Requested-With" to ""))
+    }
 }

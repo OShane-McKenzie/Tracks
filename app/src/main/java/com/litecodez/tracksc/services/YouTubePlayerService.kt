@@ -12,11 +12,14 @@ import android.content.pm.ServiceInfo
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.NotificationCompat
 import com.litecodez.tracksc.MainActivity
 import com.litecodez.tracksc.R
+import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.notificationWatcher
 import com.litecodez.tracksc.objects.CustomWebView
 
@@ -45,6 +48,7 @@ class YouTubePlayerService : Service() {
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
             webViewClient = WebViewClient()
+            addJavascriptInterface(JavaScriptInterface(), "AndroidInterface")
         }
     }
 
@@ -87,12 +91,18 @@ class YouTubePlayerService : Service() {
                         'autoplay': 1
                       },
                       events: {
-                        'onReady': onPlayerReady
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
                       }
                     });
                   }
                   function onPlayerReady(event) {
                     event.target.playVideo();
+                  }
+                  function onPlayerStateChange(event) {
+                    if (window.AndroidInterface) {
+                      window.AndroidInterface.onPlayerStateChange(event.data);
+                    }
                   }
                 </script>
               </body>
@@ -144,10 +154,10 @@ class YouTubePlayerService : Service() {
         return result
     }
 
-    fun getCurrentPosition(): Long {
-        var position = 0L
+    fun getCurrentPosition(): Float{
+        var position = 0F
         webView?.evaluateJavascript("player.getCurrentTime();") { time ->
-            position = ((time.toFloatOrNull() ?: (0f * 1000))).toLong()
+            position = ((time.toFloatOrNull() ?: (0f * 1000)))
         }
         return position
     }
@@ -161,6 +171,28 @@ class YouTubePlayerService : Service() {
             ended = state.toIntOrNull() == 0 // 0 is the code for "ended" state
         }
         return ended
+    }
+
+    private inner class JavaScriptInterface {
+        @JavascriptInterface
+        fun onPlayerStateChange(state: Int) {
+            // Handle state change here
+            when (state) {
+                0 -> {
+                    Log.d("YouTubePlayerService", "Video ended")
+                    contentProvider.playerState.intValue = 0
+                }
+                1 -> {
+                    Log.d("YouTubePlayerService", "Video playing")
+                    contentProvider.playerState.intValue = 1
+                }
+                2 -> {
+                    Log.d("YouTubePlayerService", "Video paused")
+                    contentProvider.playerState.intValue = 2
+                }
+                // Add more states as needed
+            }
+        }
     }
 
     override fun onDestroy() {

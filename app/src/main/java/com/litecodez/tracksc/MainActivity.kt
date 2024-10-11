@@ -86,13 +86,13 @@ class MainActivity : ComponentActivity() {
                 .trim()
                 .replace("0x", "")
                 .toLong(16)
-            val wallpaper = loadPreferences(applicationContext, "wallpaper", "one")
+            val wallpaper = loadPreferences(applicationContext, "wallpaper", "six")
 
             // Set theme colors and wallpaper in content provider
             contentProvider.majorThemeColor.value = Color(major)
             contentProvider.minorThemeColor.value = Color(minor)
             contentProvider.textThemeColor.value = Color(textTheme)
-            contentProvider.wallpaper.intValue = contentProvider.wallpaperMap[wallpaper] ?: R.drawable.tracks_bg_1
+            contentProvider.wallpaper.intValue = contentProvider.wallpaperMap[wallpaper] ?: R.drawable.tracks_bg_6
 
         } catch (e: Exception) {
             e.printStackTrace()

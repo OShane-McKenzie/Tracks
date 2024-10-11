@@ -2,6 +2,8 @@ package com.litecodez.tracksc.components
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +47,7 @@ import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
+import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.ReactionModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
@@ -77,6 +80,9 @@ fun ChatBubble(modifier: Modifier = Modifier,
     val reactionList = remember{ mutableStateListOf<ReactionModel>() }
 
     var showReactionPicker by rememberSaveable { mutableStateOf(false) }
+    var reactionListInitialized by rememberSaveable {
+        mutableStateOf(false)
+    }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         val path = context.filesDir
@@ -85,6 +91,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
         localImageFound = imgFile.exists()
         reactionList.clear()
         reactionList.addAll(message.reactions)
+        reactionListInitialized = true
         if(!imageReady) {
             if (message.type == TCDataTypes.MessageType.IMAGE && !localImageFound) {
                 contentRepository.getImageUrl(
@@ -94,7 +101,6 @@ fun ChatBubble(modifier: Modifier = Modifier,
                     if (success) {
                         imageData = url
                         imageReady = true
-
                     } else {
                         getToast(context, "Image not found $url", long = true)
                     }
@@ -107,13 +113,27 @@ fun ChatBubble(modifier: Modifier = Modifier,
             }
         }
     }
+    LaunchedEffect(Controller.reloadMessage.value) {
+        if(reactionListInitialized){
+            val chat = contentProvider.conversations.value.find {
+                it.id == message.chatId
+            }
+            chat.ifNotNull { chatModel ->
+                val thisMessage = chatModel.content.find { it.timestamp == message.timestamp }
+                thisMessage.ifNotNull {
+                    reactionList.clear()
+                    reactionList.addAll(it.reactions)
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Controller.reloadMessage.value) {
         delay(200)
         reactionList.clear()
         reactionList.addAll(message.reactions)
     }
-
+    //if(TCDataTypes.UserType.isThisUser(message.sender)) Arrangement.End else Arrangement.Start
     Box(
         modifier = Modifier.wrapContentSize()
     ) {
@@ -123,9 +143,21 @@ fun ChatBubble(modifier: Modifier = Modifier,
                 .fillMaxWidth()
                 .wrapContentHeight(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if(TCDataTypes.UserType.isThisUser(message.sender)) Arrangement.End else Arrangement.Start
+            horizontalArrangement = if(
+                TCDataTypes.UserType.isThisUser(message.sender) &&
+                message.type!=TCDataTypes.MessageType.MEDIA_NOTIFICATION
+                ){
+                Arrangement.End
+            }else if(
+                !TCDataTypes.UserType.isThisUser(message.sender) &&
+                message.type!=TCDataTypes.MessageType.MEDIA_NOTIFICATION
+                ){
+                Arrangement.Start
+            }else{
+                Arrangement.Center
+            }
         ){
-            if(TCDataTypes.UserType.isThisUser(message.sender)){
+            if(TCDataTypes.UserType.isThisUser(message.sender) && message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
                 Column {
                     IconButton(
                         onClick = {
@@ -147,90 +179,134 @@ fun ChatBubble(modifier: Modifier = Modifier,
             }
             Box {
                 SimpleAnimator(style = AnimationStyle.UP){
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 13.dp, vertical = 8.dp)
-                            .combinedClickable(
-                                onClick = {},
-                                onLongClick = {
-                                    onDeleted(index)
-                                }
-                            )
-                            .defaultMinSize(minWidth = 100.dp)
-                            .wrapContentHeight(),
-                        colors = CardDefaults.cardColors().copy(
-                            containerColor = if (TCDataTypes.UserType.isThisUser(message.sender)) {
-                                contentProvider.majorThemeColor.value
-                            } else {
-                                contentProvider.minorThemeColor.value
-                            },
-                            contentColor = Color.Black
-                        ),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 3.dp
-                        ),
-                        shape = RoundedCornerShape(5)
-                    ) {
-                        when (
-                            message.type
-                        ) {
-                            TCDataTypes.MessageType.TEXT -> {
-                                MarkdownText(
-                                    markdown = message.content,
-                                    isTextSelectable = true,
-                                    linkColor = Color.Blue,
-                                    modifier = Modifier.padding(13.dp),
-                                    style = LocalTextStyle.current.copy(
-                                        color = if (TCDataTypes.UserType.isThisUser(message.sender)){
-                                            contentProvider.textThemeColor.value
-                                        }else{
-                                            Color.Black
-                                        }
-                                    )
+                    if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION) {
+                        Card(
+                            modifier = Modifier
+                                .padding(horizontal = 13.dp, vertical = 8.dp)
+                                .combinedClickable(
+                                    onClick = {},
+                                    onLongClick = {
+                                        onDeleted(index)
+                                    }
                                 )
-                            }
+                                .defaultMinSize(minWidth = 100.dp)
+                                .wrapContentHeight(),
+                            colors = CardDefaults.cardColors().copy(
+                                containerColor = if (TCDataTypes.UserType.isThisUser(message.sender)) {
+                                    contentProvider.majorThemeColor.value
+                                } else {
+                                    contentProvider.minorThemeColor.value
+                                },
+                                contentColor = Color.Black
+                            ),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 3.dp
+                            ),
+                            shape = RoundedCornerShape(5)
+                        ) {
+                            when (
+                                message.type
+                            ) {
+                                TCDataTypes.MessageType.TEXT -> {
+                                    MarkdownText(
+                                        markdown = message.content,
+                                        isTextSelectable = true,
+                                        linkColor = Color.Blue,
+                                        modifier = Modifier.padding(13.dp),
+                                        style = LocalTextStyle.current.copy(
+                                            color = if (TCDataTypes.UserType.isThisUser(message.sender)) {
+                                                contentProvider.textThemeColor.value
+                                            } else {
+                                                Color.Black
+                                            }
+                                        )
+                                    )
+                                }
 
-                            TCDataTypes.MessageType.IMAGE -> {
-                                if (imageReady) {
-                                    ImageInChat(img = imageData, modifier = Modifier.size(250.dp)) {
-                                        if (!localImageFound) {
-                                            scope.launch {
-                                                withContext(Dispatchers.IO) {
-                                                    saveBitmapToFile(
-                                                        context = context,
-                                                        fileLocation = Databases.Local.IMAGES_DB,
-                                                        bitmap = it,
-                                                        fileName = message.content + ".png"
-                                                    )
+                                TCDataTypes.MessageType.IMAGE -> {
+                                    if (imageReady) {
+                                        ImageInChat(
+                                            img = imageData,
+                                            modifier = Modifier.size(250.dp)
+                                        ) {
+                                            if (!localImageFound) {
+                                                scope.launch {
+                                                    withContext(Dispatchers.IO) {
+                                                        saveBitmapToFile(
+                                                            context = context,
+                                                            fileLocation = Databases.Local.IMAGES_DB,
+                                                            bitmap = it,
+                                                            fileName = message.content + ".png"
+                                                        )
+                                                    }
+                                                    localImageFound = true
                                                 }
-                                                localImageFound = true
                                             }
                                         }
                                     }
                                 }
                             }
-
+                        }
+                    }else{
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(13.dp),){
+                            Row(
+                                Modifier
+                                    .fillMaxWidth(0.5f)
+                                    .align(Alignment.Center)
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = {
+                                            onDeleted(index)
+                                        }
+                                    )
+                                    .wrapContentHeight()
+                                    .background(
+                                        color = contentProvider.majorThemeColor.value.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.FIVE)
+                                    )
+                                    .padding(TCDataTypes.Fibonacci.FIVE.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                MarkdownText(
+                                    markdown = message.content,
+                                    isTextSelectable = false,
+                                    linkColor = Color.Blue,
+                                    modifier = Modifier
+                                        //.basicMarquee()
+                                        .wrapContentHeight(),
+                                    style = LocalTextStyle.current.copy(
+                                        color = contentProvider.textThemeColor.value,
+                                        fontSize = 10.sp
+                                    )
+                                )
+                            }
                         }
                     }
                 }
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(top = 19.dp, start = 19.dp, bottom = 3.dp)
-                ){
-                    Text(
-                        message.timestamp.split(".")[0],
-                        fontSize = 9.sp,
-                        color = if (TCDataTypes.UserType.isThisUser(message.sender)){
-                            Color.LightGray
-                        }else{
-                            Color.Gray
-                        }
-                    )
+                if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(top = 19.dp, start = 19.dp, bottom = 3.dp)
+                    ) {
+                        Text(
+                            message.timestamp.split(".")[0],
+                            fontSize = 9.sp,
+                            color = if (TCDataTypes.UserType.isThisUser(message.sender)) {
+                                Color.LightGray
+                            } else {
+                                Color.Gray
+                            }
+                        )
+                    }
                 }
             }
 
-            if(!TCDataTypes.UserType.isThisUser(message.sender)){
+            if(!TCDataTypes.UserType.isThisUser(message.sender) && message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
                 Column {
                     IconButton(
                         onClick = {

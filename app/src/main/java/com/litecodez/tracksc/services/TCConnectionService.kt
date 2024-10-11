@@ -7,15 +7,18 @@ import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
+import com.litecodez.tracksc.models.ChatModel
+import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.tcConnectionWatcher
+import com.litecodez.tracksc.toMessageModel
 import kotlinx.coroutines.launch
 
 class TCConnectionService : LifecycleService() {
 
     //private val tcConnectionWatcher = Watchers()
-
+    private var establishedConnectionWatchFirstLaunch = true
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         startConnectionMonitoring()
@@ -26,6 +29,7 @@ class TCConnectionService : LifecycleService() {
         lifecycleScope.launch {
             getUserUid()?.let { userRequestOutcomeDoc ->
                 monitorConnectionRequests(userRequestOutcomeDoc)
+                monitorEstablishedConnections(userRequestOutcomeDoc)
             }
         }
     }
@@ -36,6 +40,19 @@ class TCConnectionService : LifecycleService() {
             target = userRequestOutcomeDoc
         ) { data ->
             processConnectionRequestOutcomes(data)
+        }
+    }
+
+    private suspend fun monitorEstablishedConnections(userId: String) {
+        tcConnectionWatcher.watch(
+            collection = Databases.Collections.ESTABLISHED_CONNECTIONS,
+            target = userId
+        ) { data ->
+            if(!establishedConnectionWatchFirstLaunch) {
+                Initializer.initConversations()
+            }else{
+                establishedConnectionWatchFirstLaunch = false
+            }
         }
     }
 

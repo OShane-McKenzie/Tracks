@@ -243,11 +243,15 @@ class Operator(
         }
     }
 
-    fun updateConversationOperation(id: String, callback: (Boolean) -> Unit = {}){
+    fun updateConversationOperation(id: String, updateMedia:Boolean = false,callback: (Boolean) -> Unit = {}){
         contentRepository.updateDocument(
             collectionPath = Databases.Collections.CONVERSATIONS,
             documentId = id,
-            data = contentProvider.currentChat.value?.copy(currentMediaLink = contentProvider.nowPlaying.value)!!.toMap()
+            data = if(updateMedia){
+                contentProvider.currentChat.value?.copy(currentMediaLink = contentProvider.nowPlaying.value)!!.toMap()
+            }else{
+                contentProvider.currentChat.value!!.toMap()
+            }
         ){
             success, error ->
             callback(success)

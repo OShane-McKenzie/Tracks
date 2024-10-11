@@ -169,6 +169,7 @@ class TCNotificationService : LifecycleService() {
             TCDataTypes.MessageType.TEXT -> message.content
             TCDataTypes.MessageType.IMAGE -> "Sent an image"
             TCDataTypes.MessageType.VIDEO -> "Sent a video"
+            TCDataTypes.MessageType.MEDIA_NOTIFICATION -> "Media notification"
             else -> "Sent an audio"
         }
         val notificationId = getTimeMillis().toInt() // Or generate some unique ID

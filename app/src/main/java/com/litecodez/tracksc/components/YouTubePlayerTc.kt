@@ -1,6 +1,7 @@
 package com.litecodez.tracksc.components
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,10 +32,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.contentProvider
+import com.litecodez.tracksc.getCurrentDate
+import com.litecodez.tracksc.getCurrentTime
+import com.litecodez.tracksc.getToast
+import com.litecodez.tracksc.getUserName
+import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
+import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.YouTubePlayerViewModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
+import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -46,7 +54,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun YouTubePlayerTc(
     modifier: Modifier = Modifier,
-    viewModel: YouTubePlayerViewModel
+    viewModel: YouTubePlayerViewModel,
+    operator: Operator
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
@@ -71,18 +80,12 @@ fun YouTubePlayerTc(
             hasVideoEnded = viewModel.hasVideoEnded()
         }
     }
-    LaunchedEffect(hasVideoEnded) {
-        scope.launch {
-            withContext(Dispatchers.IO){
-                while (!hasVideoEnded){
-                    withContext(Dispatchers.Main){
-                        hasVideoEnded = viewModel.hasVideoEnded()
-                    }
-                    delay(3000)
-                }
-                viewModel.isTcPlayerPlaying = false
-            }
+    LaunchedEffect(contentProvider.playerState.intValue) {
+        if(contentProvider.playerState.intValue == 0){
+            viewModel.pause()
+            println("PlayerStateReflected: "+viewModel.isTcPlayerPlaying)
         }
+        Log.d("PlayerStateReflected", contentProvider.playerState.intValue.toString())
     }
     LaunchedEffect(contentProvider.currentSong.value) {
         contentProvider.currentSong.value.ifNotNull {
@@ -138,6 +141,39 @@ fun YouTubePlayerTc(
                 .align(Alignment.CenterEnd)
                 .clickable {
                     viewModel.togglePlayPause()
+                    if(viewModel.isTcPlayerPlaying){
+                        scope.launch {
+                            withContext(Dispatchers.Main){
+                                showSongDetails = true
+                            }
+                            delay(8000)
+                            withContext(Dispatchers.Main){
+                                showSongDetails = false
+                            }
+                        }
+                    }else{
+                        contentProvider.currentChat.value.ifNotNull {
+                            val newMessage = MessageModel(
+                                chatId = contentProvider.currentChat.value!!.id,
+                                sender = getUserUid() ?: "",
+                                senderName = getUserName(),
+                                content = "${getUserName()} paused $songDetails",
+                                type = TCDataTypes.MessageType.MEDIA_NOTIFICATION,
+                                timestamp = "${getCurrentDate()} ${getCurrentTime()}",
+                                reactions = mutableListOf()
+                            )
+                            operator.sendMessageToStagingOperation(
+                                messageModel = newMessage,
+                                id = contentProvider.currentChat.value?.id + getCurrentDate() + getCurrentTime()
+                            ) { result ->
+                                if (result.isError) {
+                                    scope.launch(Dispatchers.Main) {
+                                        getToast(context, "Error sending message: ${result.msg}")
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
         )
 

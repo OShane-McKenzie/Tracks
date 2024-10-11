@@ -36,6 +36,7 @@ class ContentProvider {
     val minorThemeColor = mutableStateOf(Color(0xFFBBDEFB))
     val textThemeColor = mutableStateOf(Color(0xFFFFFFFF))
     val currentSong = mutableStateOf<Video?>(null)
+    val playerState = mutableIntStateOf(-1)
     val wallpaperMap = mapOf(
         "one" to R.drawable.tracks_bg_1,
         "two" to R.drawable.tracks_bg_2,
@@ -46,7 +47,7 @@ class ContentProvider {
         "seven" to R.drawable.tracks_bg_7,
         "eight" to R.drawable.tracks_bg_8
     )
-    val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_1)
+    val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_6)
     val chatIdFromNotification = mutableStateOf<String?>(null)
-    val intentId = mutableStateOf("")
+
 }

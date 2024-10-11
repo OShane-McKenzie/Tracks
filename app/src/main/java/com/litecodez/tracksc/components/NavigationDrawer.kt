@@ -155,7 +155,7 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                             VideoListItem(video = video){
                                 contentProvider.nowPlaying.value = it
                                 contentProvider.currentChat.value.ifNotNull {  chat ->
-                                    operator.updateConversationOperation(id = chat.id)
+                                    operator.updateConversationOperation(id = chat.id, updateMedia = true)
                                 }
                                 Controller.mediaPlayerReady.value = true
                                 onDismiss(false)
@@ -193,7 +193,7 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                                     //getToast(context, "Loading media, please wait...", long = true)
                                     Controller.mediaPlayerReady.value = true
                                     contentProvider.currentChat.value.ifNotNull {  chat ->
-                                        operator.updateConversationOperation(id = chat.id)
+                                        operator.updateConversationOperation(id = chat.id, updateMedia = true)
                                     }
                                     onDismiss(false)
 

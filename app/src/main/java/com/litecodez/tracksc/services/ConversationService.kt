@@ -60,13 +60,8 @@ class ConversationService : LifecycleService() {
         if(Controller.isChatContainerOpen.value && contentProvider.currentChat.value?.id == updatedChat.id) {
             contentProvider.currentChat.value = updatedChat
             contentProvider.currentPlaylist.value = updatedChat.mediaLinks
-            lifecycleScope.launch {
-                contentProvider.nowPlaying.value = ""
-                delay(20)
-                if(Controller.initialConversationWatchAcknowledged.value) {
-                    contentProvider.nowPlaying.value = updatedChat.currentMediaLink
-                    Controller.reloadMessage.value = !Controller.reloadMessage.value
-                }
+            if(Controller.initialConversationWatchAcknowledged.value) {
+                contentProvider.nowPlaying.value = updatedChat.currentMediaLink
             }
         }
         Controller.reloadMessage.value = !Controller.reloadMessage.value

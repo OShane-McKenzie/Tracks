@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -41,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -51,6 +54,7 @@ import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatBubble
 import com.litecodez.tracksc.components.CustomSnackBar
+import com.litecodez.tracksc.components.GifImage
 import com.litecodez.tracksc.components.MessageInput
 import com.litecodez.tracksc.components.NavigationDrawer
 import com.litecodez.tracksc.components.WallpaperSelector
@@ -101,6 +105,9 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     var showNavigationDrawer by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var showUploadGif by rememberSaveable {
+        mutableStateOf(false)
+    }
     var messageListReady by rememberSaveable {
         mutableStateOf(false)
     }
@@ -132,7 +139,6 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             messageListReady = true
         }
         updateNotificationStatus(contentProvider, contentRepository)
-
     }
     LaunchedEffect(true) {
         delay(1000)
@@ -165,12 +171,8 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 delay(200)
                 removeMask = true
             }
-            if(contentProvider.nowPlaying.value.isNotEmpty()){
-                Controller.mediaPlayerReady.value = true
-            }
         }else if(messages.value.isEmpty()){
             removeMask = true
-
         }
     }
     Box(modifier = modifier) {
@@ -233,7 +235,10 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth(),
             onGetAttachment = { imageBitmap ->
-                handleImageAttachment(imageBitmap, context, contentProvider, operator, listState, scope)
+                showUploadGif = true
+                handleImageAttachment(imageBitmap, context, contentProvider, operator, listState, scope){
+                    showUploadGif = false
+                }
             }
         ) { message ->
             handleTextMessage(context, message, contentProvider, operator, listState, scope)
@@ -329,6 +334,16 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 )
             }
         }
+
+        if(showUploadGif){
+            GifImage(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clip(CircleShape)
+                    .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                    .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+            )
+        }
     }
 
     DisposableEffect(key1 = Unit) {
@@ -411,13 +426,15 @@ private fun handleImageAttachment(
     contentProvider: ContentProvider,
     operator: Operator,
     listState: LazyListState,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    callBack:()->Unit = {}
 ) {
     if (imageBitmap != null) {
         val imageName = contentProvider.currentChat.value?.id + getCurrentDate() + getCurrentTime()
         getToast(context = context, msg = "Sending image...", long = true)
 
         scope.launch(Dispatchers.IO) {
+
             sendImageMessage(imageName, imageBitmap.toByteArray()) { outcomeModel ->
                 if (!outcomeModel.isError) {
                     val newMessage = MessageModel(
@@ -434,6 +451,9 @@ private fun handleImageAttachment(
                     Controller.reloadMessage.value = !Controller.reloadMessage.value
                     scope.launch {
                         listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
+                        delay(200)
+                        listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
+                        //listState.scrollToItem(messages.value.lastIndex)
                     }
                     
                     operator.sendMessageToStagingOperation(
@@ -445,6 +465,7 @@ private fun handleImageAttachment(
                         }
                     }
                 }
+                callBack()
             }
         }
     }
@@ -474,6 +495,8 @@ private fun handleTextMessage(
         Controller.reloadMessage.value = !Controller.reloadMessage.value
 
         scope.launch {
+            listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
+            delay(200)
             listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
         }
 

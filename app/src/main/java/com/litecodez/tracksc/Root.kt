@@ -111,7 +111,7 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                         moveY += dragAmount.y
                     }
                     detectTapGestures { }
-                }, viewModel = viewModel
+                }, viewModel = viewModel, operator
             )
         }
     }

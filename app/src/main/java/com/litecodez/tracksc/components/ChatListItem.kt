@@ -202,6 +202,19 @@ fun ChatListItem(
                                 )
                             }
                         }
+                        TCDataTypes.MessageType.MEDIA_NOTIFICATION -> {
+                            SimpleAnimator(
+                                style = AnimationStyle.UP
+                            ) {
+                                Text(
+                                    text = getChatModel.content.lastOrNull()?.content ?: "",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
                         TCDataTypes.MessageType.IMAGE -> {
                             SimpleAnimator(
                                 style = AnimationStyle.UP

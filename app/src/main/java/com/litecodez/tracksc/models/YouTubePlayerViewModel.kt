@@ -56,6 +56,13 @@ class YouTubePlayerViewModel(application: Application) : AndroidViewModel(applic
 
     fun play(){
         playerService?.play()
+        isTcPlayerPlaying = true
+    }
+
+    fun pause(){
+        playerService?.pause()
+        isTcPlayerPlaying = false
+        contentProvider.playerState.intValue = -1
     }
 
     // Bind the service to the context and manage lifecycle events
@@ -124,8 +131,8 @@ class YouTubePlayerViewModel(application: Application) : AndroidViewModel(applic
     }
 
     // Get the current position of the video
-    fun getCurrentPosition(): Long {
-        return playerService?.getCurrentPosition() ?: 0L
+    fun getCurrentPosition(): Float {
+        return playerService?.getCurrentPosition() ?: 0f
     }
 
     fun reLoad(){
