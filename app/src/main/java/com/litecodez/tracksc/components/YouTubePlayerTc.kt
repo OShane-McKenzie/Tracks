@@ -7,15 +7,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.getCurrentDate
@@ -72,9 +78,9 @@ fun YouTubePlayerTc(
     LaunchedEffect(Unit) {
         viewModel.bindService(context, lifecycle)
     }
-
+    var showStopButton by rememberSaveable {mutableStateOf(false)}
     LaunchedEffect(contentProvider.nowPlaying.value) {
-        if (contentProvider.nowPlaying.value.isNotEmpty() && Controller.mediaPlayerReady.value) {
+        if (contentProvider.nowPlaying.value.isNotEmpty() && Controller.mediaPlayerReady.value && !Controller.stopPlayer.value) {
             viewModel.loadVideo(contentProvider.nowPlaying.value, context)
             viewModel.play()
             hasVideoEnded = viewModel.hasVideoEnded()
@@ -97,12 +103,37 @@ fun YouTubePlayerTc(
             }
         }
     }
+    fun sendMessage(msg:String){
+        contentProvider.currentChat.value.ifNotNull {
+            val newMessage = MessageModel(
+                chatId = contentProvider.currentChat.value!!.id,
+                sender = getUserUid() ?: "",
+                senderName = getUserName(),
+                content = msg,
+                type = TCDataTypes.MessageType.MEDIA_NOTIFICATION,
+                timestamp = "${getCurrentDate()} ${getCurrentTime()}",
+                reactions = mutableListOf()
+            )
+            operator.sendMessageToStagingOperation(
+                messageModel = newMessage,
+                id = contentProvider.currentChat.value?.id + getCurrentDate() + getCurrentTime()
+            ) { result ->
+                if (result.isError) {
+                    scope.launch(Dispatchers.Main) {
+                        getToast(
+                            context,
+                            "Error sending message"
+                        )
+                    }
+                }
+            }
+        }
+    }
     Box(
         modifier = modifier
-            .height(if (!showSongDetails) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
-            .width(if (!showSongDetails) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
+            .height(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
+            .width(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
     ) {
-
         if(showSongDetails){
             SimpleAnimator(
                 modifier = Modifier
@@ -129,53 +160,73 @@ fun YouTubePlayerTc(
                 }
             }
         }
-        Image(
-            painter = painterResource(
-                if (viewModel.isTcPlayerPlaying) R.drawable.pause
-                else R.drawable.play
-            ),
-            contentDescription = if (viewModel.isTcPlayerPlaying) "Pause" else "Play",
-            modifier = Modifier
-                .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-                .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-                .align(Alignment.CenterEnd)
-                .clickable {
-                    viewModel.togglePlayPause()
-                    if(viewModel.isTcPlayerPlaying){
-                        scope.launch {
-                            withContext(Dispatchers.Main){
-                                showSongDetails = true
-                            }
-                            delay(8000)
-                            withContext(Dispatchers.Main){
-                                showSongDetails = false
-                            }
-                        }
-                    }else{
-                        contentProvider.currentChat.value.ifNotNull {
-                            val newMessage = MessageModel(
-                                chatId = contentProvider.currentChat.value!!.id,
-                                sender = getUserUid() ?: "",
-                                senderName = getUserName(),
-                                content = "${getUserName()} paused $songDetails",
-                                type = TCDataTypes.MessageType.MEDIA_NOTIFICATION,
-                                timestamp = "${getCurrentDate()} ${getCurrentTime()}",
-                                reactions = mutableListOf()
-                            )
-                            operator.sendMessageToStagingOperation(
-                                messageModel = newMessage,
-                                id = contentProvider.currentChat.value?.id + getCurrentDate() + getCurrentTime()
-                            ) { result ->
-                                if (result.isError) {
-                                    scope.launch(Dispatchers.Main) {
-                                        getToast(context, "Error sending message: ${result.msg}")
+        Column(
+            modifier =
+            Modifier
+                .align(Alignment.CenterEnd),
+            verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+
+            Image(
+                painter = painterResource(
+                    if (viewModel.isTcPlayerPlaying) R.drawable.pause
+                    else R.drawable.play
+                ),
+                contentDescription = if (viewModel.isTcPlayerPlaying) "Pause" else "Play",
+                modifier = Modifier
+                    .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                    .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                    .combinedClickable(
+                        onClick = {
+                            viewModel.togglePlayPause()
+                            if (viewModel.isTcPlayerPlaying) {
+                                scope.launch {
+                                    withContext(Dispatchers.Main) {
+                                        showSongDetails = true
+                                    }
+                                    delay(8000)
+                                    withContext(Dispatchers.Main) {
+                                        showSongDetails = false
                                     }
                                 }
+                            } else {
+                                if (songDetails.isNotEmpty()) {
+                                    sendMessage("${getUserName()} paused $songDetails")
+                                }
                             }
-                        }
+                        },
+                        onLongClick = { showStopButton = !showStopButton }
+                    )
+            )
+            if(showStopButton){
+                SimpleAnimator(
+                    style = AnimationStyle.DOWN
+                ) {
+                    Button(
+                        onClick = {
+                            if(!Controller.stopPlayer.value){
+                                viewModel.pause()
+                                Controller.mediaPlayerReady.value = false
+                                Controller.stopPlayer.value = !Controller.stopPlayer.value
+                                showStopButton = false
+                                sendMessage("${getUserName()} Disabled playback")
+                            }else{
+                                Controller.mediaPlayerReady.value = true
+                                Controller.stopPlayer.value = true
+                                showStopButton = false
+                                sendMessage("${getUserName()} Enabled playback")
+                            }
+                        },
+                        Modifier
+                            .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                            .width(TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.dp)
+                    ) {
+                        Text(text = if (!Controller.stopPlayer.value) "Disable playback" else "Enable playback", fontSize = 10.sp)
                     }
                 }
-        )
-
+            }
+        }
     }
 }
+

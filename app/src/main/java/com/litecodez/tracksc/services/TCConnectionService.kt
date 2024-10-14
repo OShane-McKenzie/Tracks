@@ -29,7 +29,7 @@ class TCConnectionService : LifecycleService() {
         lifecycleScope.launch {
             getUserUid()?.let { userRequestOutcomeDoc ->
                 monitorConnectionRequests(userRequestOutcomeDoc)
-                monitorEstablishedConnections(userRequestOutcomeDoc)
+                //monitorEstablishedConnections(userRequestOutcomeDoc)
             }
         }
     }
@@ -43,18 +43,18 @@ class TCConnectionService : LifecycleService() {
         }
     }
 
-    private suspend fun monitorEstablishedConnections(userId: String) {
-        tcConnectionWatcher.watch(
-            collection = Databases.Collections.ESTABLISHED_CONNECTIONS,
-            target = userId
-        ) { data ->
-            if(!establishedConnectionWatchFirstLaunch) {
-                Initializer.initConversations()
-            }else{
-                establishedConnectionWatchFirstLaunch = false
-            }
-        }
-    }
+//    private suspend fun monitorEstablishedConnections(userId: String) {
+//        tcConnectionWatcher.watch(
+//            collection = Databases.Collections.ESTABLISHED_CONNECTIONS,
+//            target = userId
+//        ) { data ->
+//            if(!establishedConnectionWatchFirstLaunch) {
+//                Initializer.initConversations()
+//            }else{
+//                establishedConnectionWatchFirstLaunch = false
+//            }
+//        }
+//    }
 
     private fun processConnectionRequestOutcomes(data: Map<String, Any>) {
         val requestOutcomes = data["requests"] as? List<Map<String, Boolean>> ?: return

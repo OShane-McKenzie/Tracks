@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -47,7 +49,7 @@ import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 
 @Composable
-fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator: Operator,onDismiss: (Boolean) -> Unit = {}){
+fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator: Operator,onMore: () -> Unit = {},onDismiss: (Boolean) -> Unit = {}){
 
     val localShowDrawer by rememberUpdatedState(newValue = showDrawer)
     var videoListSearchText by rememberSaveable { mutableStateOf("") }
@@ -121,18 +123,18 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                             Text(
                                 text = "Title",
                                 color = contentProvider.textThemeColor.value,
-                                fontSize = TCDataTypes.Fibonacci.TWELVE.sp,
+                                fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "Artist",
                                 color = contentProvider.textThemeColor.value,
-                                fontSize = TCDataTypes.Fibonacci.TWELVE.sp
+                                fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp
                             )
                             Text(
                                 text = "Genre",
                                 color = contentProvider.textThemeColor.value,
-                                fontSize = TCDataTypes.Fibonacci.TWELVE.sp,
+                                fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp,
                                 fontWeight = FontWeight.Thin,
                                 fontStyle = FontStyle.Italic
                             )
@@ -147,7 +149,7 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                                 color = contentProvider.textThemeColor.value,
                                 shape = RoundedCornerShape(TCDataTypes.Fibonacci.THREE)
                             )
-                            .fillMaxHeight(0.6f),
+                            .fillMaxHeight(0.5f),
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -202,6 +204,21 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                                 }
                             }
                         )
+                    }
+                    contentProvider.currentChat.value.ifNotNull {
+                        if(it.ownershipModel == TCDataTypes.OwnershipType.DUAL){
+                            Button(
+                                onClick = {
+                                    onMore()
+                                    onDismiss(false)
+                                },
+                                colors = ButtonDefaults.buttonColors().copy(
+                                    containerColor = contentProvider.textThemeColor.value,
+                                    contentColor = contentProvider.majorThemeColor.value)
+                            ){
+                                Text("More")
+                            }
+                        }
                     }
                 }
                 Column(

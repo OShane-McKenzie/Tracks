@@ -14,8 +14,12 @@ object TCDataTypes {
         const val IMAGE = "image"
         const val AUDIO = "audio"
         const val MEDIA_NOTIFICATION = "media_notification"
+        const val MESSAGE_USER_BLOCKED = "message_user_blocked"
     }
-
+    object ConversationManagementType {
+        const val DELETE = "delete"
+        const val EDIT = "edit"
+    }
     object UserType{
         const val USER = "user"
         const val ADMIN = "admin"
@@ -31,7 +35,7 @@ object TCDataTypes {
         const val THREE = 3
         const val FIVE = 5
         const val EIGHT = 8
-        const val TWELVE = 13
+        const val THIRTEEN = 13
         const val TWENTY_ONE = 21
         const val FIFTY_FIVE = 55
         const val EIGHTY_NINE = 89
@@ -51,6 +55,10 @@ object TCDataTypes {
         const val MESSAGE_REACTION = "message_reaction"
         const val MESSAGE_RECEIVED = "message_received"
         const val MESSAGE_DENIED = "message_denied"
+        const val MESSAGE_USER_BLOCKED = "message_user_blocked"
+        const val MESSAGE_USER_UNBLOCKED = "message_user_unblocked"
+        const val MESSAGE_USER_JOINED = "message_user_joined"
+        const val MESSAGE_USER_LEFT = "message_user_left"
     }
     object TagType {
         const val GROUP = "Group"

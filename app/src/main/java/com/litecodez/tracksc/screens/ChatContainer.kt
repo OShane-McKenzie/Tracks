@@ -2,12 +2,15 @@ package com.litecodez.tracksc.screens
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +22,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +57,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
@@ -57,6 +66,7 @@ import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.GifImage
 import com.litecodez.tracksc.components.MessageInput
 import com.litecodez.tracksc.components.NavigationDrawer
+import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentProvider
@@ -73,12 +83,14 @@ import com.litecodez.tracksc.keyFor
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.ReactionModel
+import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
-import com.litecodez.tracksc.objects.MediaDeleteRequest
+import com.litecodez.tracksc.models.MediaDeleteRequest
 import com.litecodez.tracksc.objects.Operator
+import com.litecodez.tracksc.objects.RestrictionType
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.objects.Watchers
 import com.litecodez.tracksc.savePreferences
@@ -92,6 +104,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     val context = LocalContext.current
@@ -113,6 +126,9 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     }
     
     var removeMask by rememberSaveable {
+        mutableStateOf(false)
+    }
+    var showMoreOptions by rememberSaveable {
         mutableStateOf(false)
     }
     LaunchedEffect(true) {
@@ -288,11 +304,13 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .fillMaxHeight()
-                .fillMaxWidth(0.9f)
+                .fillMaxWidth(0.9f),
+            onMore = {
+                showMoreOptions = true
+            }
         ){
             showNavigationDrawer = it
         }
-
         Column(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -334,15 +352,126 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 )
             }
         }
+        if(showMoreOptions){
+            val scrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(TCDataTypes.Fibonacci.EIGHT.dp)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .background(
+                        color = contentProvider.majorThemeColor.value.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
+                    ),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(
+                    onClick = {
+                        showMoreOptions = false
+                    }
+                ){
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close",
+                    tint = contentProvider.textThemeColor.value)
+                }
+                contentProvider.currentChat.value.ifNotNull { chat ->
+                    val interlocutor = chat.owners.find { it != getUserUid()!! }?:""
+                    val interlocutorName = contentProvider.tags.value.find { it.userId == interlocutor }?.name?:""
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(TCDataTypes.Fibonacci.EIGHT.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ){
+                        var isUserBlocked = contentProvider.restrictedUsers.value.contains(
+                            interlocutor
+                        )
+                        LaunchedEffect(Controller.reloadRestrictions){
+                            isUserBlocked = contentProvider.restrictedUsers.value.contains(
+                                interlocutor
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                if(chat.ownershipModel == TCDataTypes.OwnershipType.DUAL){
+                                    operator.restrictUserOperation(id = interlocutor, RestrictionType.BLOCK){ response ->
+                                        if(response){
+                                            val newMessage = MessageModel(
+                                                chatId = chat.id,
+                                                sender = getUserUid() ?: "",
+                                                senderName = getUserName(),
+                                                content = "${getUserName()} blocked $interlocutorName\n" +
+                                                        "$interlocutorName can still receive messages from ${getUserName()} unless they also block ${getUserName()}",
+                                                type = TCDataTypes.MessageType.MESSAGE_USER_BLOCKED,
+                                                timestamp = "${getCurrentDate()} ${getCurrentTime()}",
+                                                reactions = mutableListOf()
+                                            )
+                                            operator.sendMessageToStagingOperation(
+                                                messageModel = newMessage,
+                                                id = chat.id + getCurrentDate() + getCurrentTime()
+                                            ) { result ->
+                                                if (result.isError) {
+                                                    scope.launch(Dispatchers.Main) {
+                                                        getToast(context, "Error sending message: ${result.msg}")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors().copy(
+                                containerColor = contentProvider.textThemeColor.value,
+                                contentColor = contentProvider.majorThemeColor.value),
+                            enabled = !isUserBlocked,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(0.4f)
+                        ) {
+                            Text(text = "Block ${contentProvider.tags.value.find { it.userId == interlocutor }?.name}",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                if(chat.ownershipModel == TCDataTypes.OwnershipType.DUAL){
+                                    operator.restrictUserOperation(id = interlocutor, RestrictionType.UNBLOCK)
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors().copy(
+                                containerColor = contentProvider.textThemeColor.value,
+                                contentColor = contentProvider.majorThemeColor.value),
+                            enabled = isUserBlocked,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(0.4f)
+                        ) {
+                            Text(text = "Unblock ${contentProvider.tags.value.find { it.userId == interlocutor }?.name}",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         if(showUploadGif){
-            GifImage(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .clip(CircleShape)
-                    .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-                    .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-            )
+            SimpleAnimator(
+                style = AnimationStyle.SCALE_IN_CENTER,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                GifImage(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .clip(CircleShape)
+                        .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                        .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                )
+            }
         }
     }
 

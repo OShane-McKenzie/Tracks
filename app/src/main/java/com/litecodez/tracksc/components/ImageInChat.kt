@@ -35,7 +35,13 @@ import java.io.ByteArrayOutputStream
 
 
 @Composable
-fun ImageInChat(modifier: Modifier = Modifier, img:Any, shape:RoundedCornerShape = RoundedCornerShape(3), defaultImage:Int = R.drawable.loading, contentScale: ContentScale = ContentScale.Fit,onSuccess:(Bitmap) -> Unit = {}){
+fun ImageInChat(
+    modifier: Modifier = Modifier,
+    img:Any,
+    shape:RoundedCornerShape = RoundedCornerShape(3),
+    defaultImage:Int = R.drawable.loading,
+    contentScale: ContentScale = ContentScale.Fit,
+    onSuccess:(Bitmap) -> Unit = {}){
 
     val scope = rememberCoroutineScope()
     Box(modifier = modifier.background(color = Color.White, shape = shape)){

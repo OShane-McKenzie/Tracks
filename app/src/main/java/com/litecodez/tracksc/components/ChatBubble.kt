@@ -157,7 +157,11 @@ fun ChatBubble(modifier: Modifier = Modifier,
                 Arrangement.Center
             }
         ){
-            if(TCDataTypes.UserType.isThisUser(message.sender) && message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
+            if(
+                TCDataTypes.UserType.isThisUser(message.sender) &&
+                message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION  &&
+                message.type != TCDataTypes.MessageType.MESSAGE_USER_BLOCKED
+                ){
                 Column {
                     IconButton(
                         onClick = {
@@ -170,7 +174,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                         Icon(
                             imageVector = Icons.Default.Face,
                             contentDescription = "emoji selector",
-                            tint = if (showReactionPicker) Color.Blue else Color.Gray.copy(alpha = 0.5f),
+                            tint = if (showReactionPicker) contentProvider.textThemeColor.value else contentProvider.textThemeColor.value.copy(alpha = 0.4f),
                             modifier = Modifier
                                 .size(21.dp)
                         )
@@ -179,7 +183,10 @@ fun ChatBubble(modifier: Modifier = Modifier,
             }
             Box {
                 SimpleAnimator(style = AnimationStyle.UP){
-                    if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION) {
+                    if(
+                        message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION &&
+                        message.type != TCDataTypes.MessageType.MESSAGE_USER_BLOCKED
+                        ) {
                         Card(
                             modifier = Modifier
                                 .padding(horizontal = 13.dp, vertical = 8.dp)
@@ -264,7 +271,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                                     )
                                     .wrapContentHeight()
                                     .background(
-                                        color = contentProvider.majorThemeColor.value.copy(alpha = 0.5f),
+                                        color = contentProvider.majorThemeColor.value.copy(alpha = if(message.type == TCDataTypes.MessageType.MESSAGE_USER_BLOCKED) 1f else 0.6f),
                                         shape = RoundedCornerShape(TCDataTypes.Fibonacci.FIVE)
                                     )
                                     .padding(TCDataTypes.Fibonacci.FIVE.dp),
@@ -287,7 +294,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                         }
                     }
                 }
-                if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
+                if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION && message.type != TCDataTypes.MessageType.MESSAGE_USER_BLOCKED){
                     Row(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -306,7 +313,10 @@ fun ChatBubble(modifier: Modifier = Modifier,
                 }
             }
 
-            if(!TCDataTypes.UserType.isThisUser(message.sender) && message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION){
+            if(!TCDataTypes.UserType.isThisUser(message.sender) &&
+                message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION  &&
+                message.type != TCDataTypes.MessageType.MESSAGE_USER_BLOCKED
+                ){
                 Column {
                     IconButton(
                         onClick = {
@@ -318,7 +328,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                         Icon(
                             imageVector = Icons.Default.Face,
                             contentDescription = "emoji selector",
-                            tint = if (showReactionPicker) Color.Blue else Color.Gray.copy(alpha = 0.5f),
+                            tint = if (showReactionPicker) contentProvider.textThemeColor.value else contentProvider.textThemeColor.value.copy(alpha = 0.4f),
                             modifier = Modifier
                                 .size(21.dp)
                         )

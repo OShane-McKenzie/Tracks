@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,19 +28,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import androidx.test.core.app.ActivityScenario.launch
 import com.litecodez.tracksc.contentProvider
+import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -54,6 +50,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
     var typingTimer by remember { mutableStateOf<Job?>(null) }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
     val filteredTags = contentProvider.tags.value.filter {
         it.id .contains(text.trim(), ignoreCase = true) &&
         text.trim().isNotEmpty() &&
@@ -62,7 +59,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
     Column(
         modifier = modifier
             .wrapContentSize()
-            .padding(top = TCDataTypes.Fibonacci.EIGHT.dp),
+            .padding(top = TCDataTypes.Fibonacci.THIRTEEN.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -119,7 +116,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                                     ),
                                     shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
                                 )
-                                .blur(TCDataTypes.Fibonacci.TWELVE.dp)
+                                .blur(TCDataTypes.Fibonacci.THIRTEEN.dp)
                         ) {}
 
                         Column(
@@ -133,6 +130,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                                 ) { target ->
                                     if (target.userId != getUserUid()) {
                                         getUserUid().ifNotNull {
+                                            getToast(context, "Connecting to ${target.name}")
                                             operator.sendConnectionRequest(
                                                 TrackConnectionRequestModel(
                                                     senderId = it,
@@ -143,6 +141,7 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                                             )
                                         }
                                     }
+                                    text = ""
                                 }
                                 Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHT.dp))
                             }

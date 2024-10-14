@@ -1,8 +1,10 @@
 package com.litecodez.tracksc.components
 
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,19 +63,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatListItem(
     modifier: Modifier = Modifier,
     chatModel: ChatModel,
     index: Int,
     saveChatImage: Boolean = false,
+    onLongClick: (ChatModel) -> Unit = {},
     onClick: (ChatModel) -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val getChatModel by remember {
         derivedStateOf {
-            contentProvider.conversations.value[index]
+            contentProvider.conversations.value.getOrNull(index) ?: ChatModel()
         }
     }
     val interlocutor by remember(getChatModel) {
@@ -90,7 +95,7 @@ fun ChatListItem(
     var chatImage by rememberSaveable { mutableStateOf("") }
     var imageReady by rememberSaveable { mutableStateOf(false) }
     var imageData by rememberSaveable { mutableStateOf<Any>("") }
-
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var notifications by remember {
         mutableIntStateOf(0)
     }
@@ -141,13 +146,18 @@ fun ChatListItem(
                 )
                 .padding(3.dp)
                 .defaultMinSize(minHeight = 80.dp)
-                .clickable {
-                    val chatIndex = contentProvider.conversations.value.find { it.id == getChatModel.id }?.let {
-                        contentProvider.conversations.value.indexOf(it)
-                    }?:index
-                    contentProvider.currentChat.value = contentProvider.conversations.value[chatIndex]
-                    onClick(contentProvider.currentChat.value!!)
-                },
+                .combinedClickable(
+                    onClick = {
+                        val chatIndex = contentProvider.conversations.value.find { it.id == getChatModel.id }?.let {
+                            contentProvider.conversations.value.indexOf(it)
+                        }?:index
+                        contentProvider.currentChat.value = contentProvider.conversations.value[chatIndex]
+                        onClick(contentProvider.currentChat.value!!)
+                    },
+                    onLongClick = {
+                        showDeleteDialog = true
+                    }
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
@@ -203,6 +213,19 @@ fun ChatListItem(
                             }
                         }
                         TCDataTypes.MessageType.MEDIA_NOTIFICATION -> {
+                            SimpleAnimator(
+                                style = AnimationStyle.UP
+                            ) {
+                                Text(
+                                    text = getChatModel.content.lastOrNull()?.content ?: "",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.Black,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                        TCDataTypes.MessageType.MESSAGE_USER_BLOCKED -> {
                             SimpleAnimator(
                                 style = AnimationStyle.UP
                             ) {
@@ -280,5 +303,28 @@ fun ChatListItem(
                 )
             }
         }
+        if (showDeleteDialog) {
+            DeleteConversationDialog(onDismiss = { showDeleteDialog = false }){
+                onLongClick(getChatModel)
+                showDeleteDialog = false
+            }
+        }
     }
+}
+
+@Composable
+private fun DeleteConversationDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete conversation") },
+        text = { Text("Do you want to delete this conversation?") },
+        confirmButton = {
+            Text("Delete", color = Color.Red, modifier = Modifier.clickable{
+                onConfirm()
+            })
+        },
+        dismissButton = {
+            Text("Cancel", modifier = Modifier.clickable(onClick = onDismiss))
+        }
+    )
 }

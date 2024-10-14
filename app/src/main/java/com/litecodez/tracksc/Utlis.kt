@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import com.google.firebase.auth.FirebaseAuth
 import com.litecodez.tracksc.models.ChatModel
+import com.litecodez.tracksc.models.ConversationEditModel
 import com.litecodez.tracksc.models.LocalImages
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
@@ -18,7 +19,7 @@ import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.HasId
-import com.litecodez.tracksc.objects.MediaDeleteRequest
+import com.litecodez.tracksc.models.MediaDeleteRequest
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.ByteArrayOutputStream
@@ -496,6 +497,14 @@ fun ImageBitmap.toByteArray(format: Bitmap.CompressFormat = Bitmap.CompressForma
     return stream.toByteArray()
 }
 
+fun ConversationEditModel.toMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>()
+    map["conversationId"] = conversationId
+    map["action"] = action
+    map["requester"] = requester
+    return map
+}
+
 fun String.toDecompressedString(): String {
     val compressedBytes = Base64.getDecoder().decode(this)
     val inputStream = compressedBytes.inputStream()
@@ -644,13 +653,17 @@ fun extractVideoId(link: String): OutcomeModel {
 
 
 fun nextVideo(){
-    if(contentProvider.incrementer.intValue < contentProvider.currentPlaylist.value.size){
-        contentProvider.nowPlaying.value = contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
-        contentProvider.incrementer.intValue++
-    }else{
-        contentProvider.incrementer.intValue = 0
-        contentProvider.nowPlaying.value = contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
-        contentProvider.incrementer.intValue++
+    if(contentProvider.currentPlaylist.value.isNotEmpty()) {
+        if (contentProvider.incrementer.intValue < contentProvider.currentPlaylist.value.size) {
+            contentProvider.nowPlaying.value =
+                contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
+            contentProvider.incrementer.intValue++
+        } else {
+            contentProvider.incrementer.intValue = 0
+            contentProvider.nowPlaying.value =
+                contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
+            contentProvider.incrementer.intValue++
+        }
     }
 }
 

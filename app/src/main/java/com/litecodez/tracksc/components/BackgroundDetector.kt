@@ -5,10 +5,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 
 @Composable
-fun BackgroundDetector(onForeground: () -> Unit = {}, onBackground: () -> Unit = {}) {
-    val lifecycleOwner = LocalLifecycleOwner.current
+fun BackgroundDetector(lifecycleOwner: LifecycleOwner, onForeground: () -> Unit = {}, onBackground: () -> Unit = {}) {
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->

@@ -8,6 +8,7 @@ import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
+import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.services.ConversationService
@@ -36,6 +37,7 @@ object Initializer {
                         this.userId = it.data?.get("userId")?.toString() ?: ""
                         this.name = it.data?.get("name")?.toString() ?: ""
                         this.type = it.data?.get("type")?.toString() ?: ""
+                        this.photoUrl = it.data?.get("photoUrl")?.toString() ?: ""
                         tagsList.add(this)
                     }
                 }catch (e:Exception){
@@ -119,6 +121,15 @@ object Initializer {
                 }
             }
         }
+        contentRepository.getDocument(
+            collectionPath = Databases.Collections.RESTRICTIONS,
+            documentId = getUserUid()!!
+        ){ data ->
+            val restrictedUsers = data?.data?.get("blockedUsers") as? List<String>
+            restrictedUsers.ifNotNull {
+                contentProvider.restrictedUsers.value = it
+            }
+        }
     }
 
     fun initUserProfile(context: Context, callBack: (Boolean)->Unit = {}){
@@ -156,6 +167,7 @@ object Initializer {
                         this.userId = it.data?.get("userId")?.toString() ?: ""
                         this.name = it.data?.get("name")?.toString() ?: ""
                         this.type = it.data?.get("type")?.toString() ?: ""
+                        this.photoUrl = it.data?.get("photoUrl")?.toString() ?: ""
                         tagsList.add(this)
                     }
                 }catch (e:Exception){

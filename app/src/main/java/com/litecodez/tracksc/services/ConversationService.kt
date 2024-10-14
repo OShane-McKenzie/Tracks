@@ -5,9 +5,12 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.conversationWatcher
+import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
+import com.litecodez.tracksc.objects.Initializer
+import com.litecodez.tracksc.tcConnectionWatcher
 import com.litecodez.tracksc.toMessageModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,9 +20,13 @@ class ConversationService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         startConversationMonitoring()
+        getUserUid()?.let {
+            id ->
+            monitorEstablishedConnections(id)
+        }
         return START_STICKY
     }
-
+    private var establishedConnectionWatchFirstLaunch = true
     private fun startConversationMonitoring() {
         lifecycleScope.launch {
             while (true) {
@@ -40,6 +47,19 @@ class ConversationService : LifecycleService() {
                 if(contentProvider.chatIdFromNotification.value.isNullOrEmpty()) {
                     contentProvider.currentChat.value = null
                 }
+            }
+        }
+    }
+
+    private fun monitorEstablishedConnections(userId: String) {
+        tcConnectionWatcher.watch(
+            collection = Databases.Collections.ESTABLISHED_CONNECTIONS,
+            target = userId
+        ) {
+            if(!establishedConnectionWatchFirstLaunch) {
+                Initializer.initConversations()
+            }else{
+                establishedConnectionWatchFirstLaunch = false
             }
         }
     }

@@ -20,6 +20,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.IntOffset
+import com.litecodez.tracksc.components.BackgroundDetector
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.YouTubePlayerTc
 import com.litecodez.tracksc.models.YouTubePlayerViewModel
@@ -48,7 +49,11 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
         context = context,
         lifecycleOwner =lifecycleOwner
     )
-
+    BackgroundDetector(lifecycleOwner = lifecycleOwner, onForeground = {
+        Controller.isInBackground.value = false
+    }){
+        Controller.isInBackground.value = true
+    }
     LaunchedEffect(
         Controller.autoLockScreenOrientation.value
     ) {

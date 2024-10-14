@@ -8,8 +8,13 @@ import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getCurrentDate
 import com.litecodez.tracksc.getCurrentTime
+import com.litecodez.tracksc.getToast
+import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.home
+import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.login
+import com.litecodez.tracksc.models.ConversationEditModel
+import com.litecodez.tracksc.models.MediaDeleteRequest
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.OutcomeModel
 import com.litecodez.tracksc.models.TagsModel
@@ -267,7 +272,15 @@ class Operator(
             callback(it)
         }
     }
-
+    fun sendConversationManagementRequest(editModel: ConversationEditModel,callback: (OutcomeModel) -> Unit = {}){
+        contentRepository.createDocument(
+            collectionPath = Databases.Collections.CHAT_MANAGEMENT,
+            documentId = editModel.conversationId,
+            data = editModel.toMap()
+        ){
+            callback(it)
+        }
+    }
     fun sendMediaDeletionRequest(
         mediaDeleteRequest: MediaDeleteRequest,
         callback: (OutcomeModel) -> Unit = {}){
@@ -301,7 +314,44 @@ class Operator(
             collectionPath = Databases.Collections.CONNECTION_REQUESTS,
             documentId = getCurrentDate() + "~" + getCurrentTime(),
             data = request.toMap()
-        ){}
+        ){
+            if(it.isError){
+                getToast(context,"Error: connecting to ${request.targetName}")
+            }
+        }
+    }
+
+    fun restrictUserOperation(id: String, restrictionType: RestrictionType, callback: (Boolean) -> Unit = {}){
+        if(id.isNotEmpty()){
+            val blockedUsers = contentProvider.restrictedUsers.value.toMutableList()
+
+            if (restrictionType == RestrictionType.BLOCK) {
+                blockedUsers.add(id)
+            } else {
+                blockedUsers.remove(id)
+            }
+
+            val blockedUsersMap = mapOf("blockedUsers" to blockedUsers)
+
+            getUserUid().ifNotNull {
+                contentRepository.updateDocument(
+                    collectionPath = Databases.Collections.RESTRICTIONS,
+                    documentId = it,
+                    data = blockedUsersMap
+                ) { success, error ->
+                    if (success) {
+                        contentProvider.restrictedUsers.value = blockedUsers.toList()
+                        Controller.reloadRestrictions.value = !Controller.reloadRestrictions.value
+                        callback(true)
+                        getToast(context, "User has been blocked")
+                    } else {
+                        getToast(context, "Error: ${error?.message}")
+                        callback(false)
+                    }
+
+                }
+            }
+        }
     }
 }
 

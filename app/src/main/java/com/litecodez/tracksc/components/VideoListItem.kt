@@ -39,20 +39,20 @@ fun VideoListItem(modifier: Modifier = Modifier, video: Video, onVideoItemClick:
         Text(
             text = video.title+":",
             color = contentProvider.textThemeColor.value,
-            fontSize = TCDataTypes.Fibonacci.TWELVE.sp,
+            fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f).basicMarquee()
         )
         Text(
             text = video.artist,
             color = contentProvider.textThemeColor.value,
-            fontSize = TCDataTypes.Fibonacci.TWELVE.sp,
+            fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp,
             modifier = Modifier.weight(0.8f).basicMarquee()
         )
         Text(
             text = video.genre,
             color = contentProvider.textThemeColor.value,
-            fontSize = TCDataTypes.Fibonacci.TWELVE.sp,
+            fontSize = TCDataTypes.Fibonacci.THIRTEEN.sp,
             fontWeight = FontWeight.Thin,
             fontStyle = FontStyle.Italic,
             modifier = Modifier.weight(0.5f).basicMarquee()

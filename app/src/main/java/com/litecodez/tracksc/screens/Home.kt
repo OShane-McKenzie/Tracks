@@ -1,24 +1,48 @@
 package com.litecodez.tracksc.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardOptionKey
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatList
+import com.litecodez.tracksc.components.TCImage
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
+import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.objects.AuthenticationManager
@@ -28,8 +52,10 @@ import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.toMap
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager){
@@ -98,6 +124,70 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 .align(Alignment.TopCenter),
             operator = operator
         )
+        Box(modifier = Modifier
+            .align(Alignment.TopCenter)
+            .fillMaxWidth()){
+            Row(
+                modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                    .background(
+                        color = contentProvider.majorThemeColor.value,
+                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT)
+                    )
+                    .align(Alignment.Center),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
+            ) {
+                val userTag = contentProvider.tags.value.find { it.userId == getUserUid() }
+
+                userTag.ifNotNull {
+                    TCImage(
+                        img = it.photoUrl,
+                        modifier = Modifier
+                            .size(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                            .clip(CircleShape),
+                        remoteDatabase = Databases.Buckets.USER_PROFILE_IMAGES
+                    )
+                    Spacer(modifier = Modifier.width(13.dp))
+                    Text(
+                        text = it.name,
+                        color = contentProvider.textThemeColor.value,
+                        modifier = Modifier.basicMarquee()
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    MarkdownText(
+                        markdown = it.id,
+                        isTextSelectable = true,
+                        linkColor = Color.Blue,
+                        modifier = Modifier.padding(3.dp),
+                        style = LocalTextStyle.current.copy(
+                            color = contentProvider.textThemeColor.value
+                        )
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = TCDataTypes.Fibonacci.TWENTY_ONE.dp)
+
+            ){
+                Icon(
+                    imageVector = Icons.Default.KeyboardOptionKey,
+                    contentDescription = "",
+                    tint = contentProvider.textThemeColor.value,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .size(TCDataTypes.Fibonacci.TWENTY_ONE.dp)
+                        .clickable {}
+                )
+            }
+        }
     }
+    //DragAndDropExample(modifier = Modifier.fillMaxSize())
 }
 

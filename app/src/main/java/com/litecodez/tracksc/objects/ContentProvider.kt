@@ -49,5 +49,6 @@ class ContentProvider {
     )
     val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_6)
     val chatIdFromNotification = mutableStateOf<String?>(null)
+    val restrictedUsers = mutableStateOf<List<String>>(listOf())
 
 }

@@ -1,4 +1,4 @@
-package com.litecodez.tracksc.objects
+package com.litecodez.tracksc.models
 
 data class MediaDeleteRequest(
     var chatId:String = "",

@@ -132,6 +132,8 @@ class TCNotificationService : LifecycleService() {
                     updateConversationList(chat)
                     if (contentProvider.currentChat.value?.id != chat.id) {
                         showNewMessageNotification(newMessage, chat.id)
+                    }else if(contentProvider.currentChat.value?.id == chat.id && Controller.isInBackground.value){
+                        showNewMessageNotification(newMessage, chat.id)
                     }else if (!Controller.isChatContainerOpen.value) {
                         showNewMessageNotification(newMessage, chat.id)
                     }
@@ -170,6 +172,7 @@ class TCNotificationService : LifecycleService() {
             TCDataTypes.MessageType.IMAGE -> "Sent an image"
             TCDataTypes.MessageType.VIDEO -> "Sent a video"
             TCDataTypes.MessageType.MEDIA_NOTIFICATION -> "Media notification"
+            TCDataTypes.MessageType.MESSAGE_USER_BLOCKED -> "Blocked user notification"
             else -> "Sent an audio"
         }
         val notificationId = getTimeMillis().toInt() // Or generate some unique ID
