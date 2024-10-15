@@ -62,6 +62,14 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
         }
     }
 
+    LaunchedEffect(
+        contentProvider.playlistAutoplayEnabledDisabledRegister.value,
+        contentProvider.currentChat.value
+    ) {
+        contentProvider.currentChat.value.ifNotNull {
+            Controller.isPlayListEnabled.value = contentProvider.playlistAutoplayEnabledDisabledRegister.value.contains(it.id)
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -121,3 +129,5 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
         }
     }
 }
+
+

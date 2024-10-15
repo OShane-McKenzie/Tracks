@@ -46,6 +46,7 @@ class YouTubePlayerService : Service() {
         webView = CustomWebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
+            settings.databaseEnabled = false
             settings.mediaPlaybackRequiresUserGesture = false
             webViewClient = WebViewClient()
             addJavascriptInterface(JavaScriptInterface(), "AndroidInterface")

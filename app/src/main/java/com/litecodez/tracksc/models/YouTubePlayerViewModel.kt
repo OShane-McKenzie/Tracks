@@ -17,6 +17,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.getToast
+import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.services.YouTubePlayerService
 
 class YouTubePlayerViewModel(application: Application) : AndroidViewModel(application) {
@@ -32,7 +33,16 @@ class YouTubePlayerViewModel(application: Application) : AndroidViewModel(applic
 
     // Function to load video using the player service
     fun loadVideo(videoId: String, context: Context) {
-        if (currentVideoId != videoId) {
+        if (currentVideoId != videoId && !Controller.isPlayListEnabled.value) {
+            playerService?.loadVideo(videoId)
+            currentVideoId = videoId
+            isTcPlayerPlaying = true
+
+            contentProvider.currentSong.value = contentProvider.videos.value.videos.find {
+                it.id == videoId
+            }
+            getToast(context, "Loading media, please wait...", long = true)
+        }else if(Controller.isPlayListEnabled.value){
             playerService?.loadVideo(videoId)
             currentVideoId = videoId
             isTcPlayerPlaying = true

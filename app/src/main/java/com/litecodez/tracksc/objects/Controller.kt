@@ -23,4 +23,5 @@ object Controller {
     val initialConversationWatchAcknowledged = mutableStateOf(false)
     val reloadRestrictions = mutableStateOf(false)
     val isInBackground = mutableStateOf(false)
+    val isPlayListEnabled = mutableStateOf(false)
 }

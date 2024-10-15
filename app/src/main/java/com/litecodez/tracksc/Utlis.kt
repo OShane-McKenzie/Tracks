@@ -20,6 +20,7 @@ import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.HasId
 import com.litecodez.tracksc.models.MediaDeleteRequest
+import com.litecodez.tracksc.objects.Controller
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.ByteArrayOutputStream
@@ -652,18 +653,19 @@ fun extractVideoId(link: String): OutcomeModel {
 }
 
 
-fun nextVideo(){
-    if(contentProvider.currentPlaylist.value.isNotEmpty()) {
-        if (contentProvider.incrementer.intValue < contentProvider.currentPlaylist.value.size) {
-            contentProvider.nowPlaying.value =
-                contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
-            contentProvider.incrementer.intValue++
-        } else {
-            contentProvider.incrementer.intValue = 0
-            contentProvider.nowPlaying.value =
-                contentProvider.currentPlaylist.value[contentProvider.incrementer.intValue]
-            contentProvider.incrementer.intValue++
-        }
+fun nextVideo(context: Context) {
+    val playlist = contentProvider.currentPlaylist.value
+
+    if (playlist.isNotEmpty()) {
+        val currentIndex = getIndexOfVideo()
+
+        val nextIndex = (currentIndex + 1) % playlist.size
+
+        contentProvider.nowPlaying.value = playlist[nextIndex]
+        contentProvider.incrementer.intValue = nextIndex
+    } else {
+        getToast(context, "Playlist is empty")
+        Controller.isPlayListEnabled.value = false
     }
 }
 
@@ -677,7 +679,18 @@ fun sendImageMessage(imageName:String, imageBytes:ByteArray, onUpload:(OutcomeMo
     }
 }
 
+fun registerEnableDisablePlaylistAutoplay(id:String, enabled:Boolean){
+    try{
+        if(enabled){
+            contentProvider.playlistAutoplayEnabledDisabledRegister.value = contentProvider.playlistAutoplayEnabledDisabledRegister.value.plus(id)
+        }else{
+            contentProvider.playlistAutoplayEnabledDisabledRegister.value = contentProvider.playlistAutoplayEnabledDisabledRegister.value.minus(id)
+        }
+    }catch(e: Exception){
+        e.printStackTrace()
+    }
 
+}
 
 fun createBitmapFromPicture(picture: Picture): Bitmap {
     val bitmap = Bitmap.createBitmap(

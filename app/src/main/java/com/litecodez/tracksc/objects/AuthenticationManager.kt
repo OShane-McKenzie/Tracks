@@ -105,7 +105,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
                             }
                         }
                         .addOnFailureListener(activity){
-                            getToast(context = thisContext,"${it.message}", long = true)
+                            getToast(context = thisContext,"Error", long = true)
                         }
                 }else{
                     withContext(Dispatchers.Main){
@@ -123,7 +123,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
         }catch(e: Exception){
 
             withContext(Dispatchers.Main){
-                getToast(context = thisContext,"${e.message}", long = true)
+                getToast(context = thisContext,"Error", long = true)
                 runTask(false)
             }
         }
@@ -150,7 +150,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
                             }
                         }
                         .addOnFailureListener(activity){
-                            getToast(context = thisContext,"${it.message}", long = true)
+                            getToast(context = thisContext,"Error", long = true)
                         }
                 }else{
                     withContext(Dispatchers.Main){
@@ -167,7 +167,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
             }
         }catch (e: Exception){
             withContext(Dispatchers.Main){
-                getToast(context = thisContext,"${e.message}", long = true)
+                getToast(context = thisContext,"Error", long = true)
                 runTask(false)
             }
         }
@@ -325,7 +325,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
             FirebaseCenter.getAuth().signOut()
             googleSignInClient.revokeAccess()
         }catch (e:Exception){
-            getToast(context = thisContext,"${e.message}", long = true)
+            getToast(context = thisContext,"Error", long = true)
         }
     }
 

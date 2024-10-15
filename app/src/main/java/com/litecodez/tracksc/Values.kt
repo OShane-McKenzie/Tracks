@@ -12,7 +12,8 @@ const val chatContainer:String = "chatContainer"
 
 
 const val baseApi:String = "https://oshane-mckenzie.github.io/TracksRepo/app"
-
+const val PLAY = "▶\uFE0F"
+const val PLAY_LIST = "\uD83D\uDCC3"
 val reactionsList = listOf(
     TCDataTypes.Reactions.HAPPY,
     TCDataTypes.Reactions.HEART,

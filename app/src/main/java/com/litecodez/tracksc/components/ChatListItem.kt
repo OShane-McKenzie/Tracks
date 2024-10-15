@@ -130,7 +130,7 @@ fun ChatListItem(
                 imageData = url
                 imageReady = true
             } else {
-                getToast(context, "Image not found $url", long = true)
+                getToast(context, "Image not found", long = true)
             }
         }
     }

@@ -46,6 +46,7 @@ import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.YouTubePlayerViewModel
+import com.litecodez.tracksc.nextVideo
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
@@ -80,16 +81,26 @@ fun YouTubePlayerTc(
     }
     var showStopButton by rememberSaveable {mutableStateOf(false)}
     LaunchedEffect(contentProvider.nowPlaying.value) {
-        if (contentProvider.nowPlaying.value.isNotEmpty() && Controller.mediaPlayerReady.value && !Controller.stopPlayer.value) {
+        if (contentProvider.nowPlaying.value.isNotEmpty() &&
+            Controller.mediaPlayerReady.value &&
+            !Controller.stopPlayer.value
+            )
+        {
             viewModel.loadVideo(contentProvider.nowPlaying.value, context)
             viewModel.play()
             hasVideoEnded = viewModel.hasVideoEnded()
         }
     }
     LaunchedEffect(contentProvider.playerState.intValue) {
-        if(contentProvider.playerState.intValue == 0){
+        if(contentProvider.playerState.intValue == 0 && !Controller.isPlayListEnabled.value){
             viewModel.pause()
             println("PlayerStateReflected: "+viewModel.isTcPlayerPlaying)
+        }else if(Controller.isPlayListEnabled.value && contentProvider.playerState.intValue == 0){
+            nextVideo(context)
+            contentProvider.currentChat.value.ifNotNull {  chat ->
+                operator.updateConversationOperation(id = chat.id, updateMedia = true)
+            }
+            Controller.mediaPlayerReady.value = true
         }
         Log.d("PlayerStateReflected", contentProvider.playerState.intValue.toString())
     }
@@ -131,8 +142,10 @@ fun YouTubePlayerTc(
     }
     Box(
         modifier = modifier
-            .height(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
-            .width(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
+            .height(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else
+                TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
+            .width(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else
+                TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
     ) {
         if(showSongDetails){
             SimpleAnimator(

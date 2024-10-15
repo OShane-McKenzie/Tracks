@@ -33,6 +33,7 @@ import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
+import com.litecodez.tracksc.objects.CustomExceptionHandler
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.Watchers
 import com.litecodez.tracksc.services.CustomSecurityManager
@@ -62,7 +63,8 @@ class MainActivity : ComponentActivity() {
         ) { isGranted: Boolean ->
             Controller.isPostNotificationPermissionGranted.value = isGranted
         }
-
+        Thread.setDefaultUncaughtExceptionHandler(Thread.getDefaultUncaughtExceptionHandler()
+            ?.let { CustomExceptionHandler(it) })
         // Check and request notification permission
         requestPermission()
 

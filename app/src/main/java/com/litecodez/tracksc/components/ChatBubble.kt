@@ -102,7 +102,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                         imageData = url
                         imageReady = true
                     } else {
-                        getToast(context, "Image not found $url", long = true)
+                        getToast(context, "Image not found", long = true)
                     }
                 }
             } else if (message.type == TCDataTypes.MessageType.IMAGE) {

@@ -248,12 +248,15 @@ class Operator(
         }
     }
 
-    fun updateConversationOperation(id: String, updateMedia:Boolean = false,callback: (Boolean) -> Unit = {}){
+    fun updateConversationOperation(id: String, updateMedia:Boolean = false, callback: (Boolean) -> Unit = {}){
         contentRepository.updateDocument(
             collectionPath = Databases.Collections.CONVERSATIONS,
             documentId = id,
             data = if(updateMedia){
-                contentProvider.currentChat.value?.copy(currentMediaLink = contentProvider.nowPlaying.value)!!.toMap()
+                contentProvider.currentChat.value?.copy(
+                    currentMediaLink = contentProvider.nowPlaying.value,
+                    mediaLinks = contentProvider.currentPlaylist.value.toMutableList()
+                )!!.toMap()
             }else{
                 contentProvider.currentChat.value!!.toMap()
             }
@@ -272,6 +275,7 @@ class Operator(
             callback(it)
         }
     }
+
     fun sendConversationManagementRequest(editModel: ConversationEditModel,callback: (OutcomeModel) -> Unit = {}){
         contentRepository.createDocument(
             collectionPath = Databases.Collections.CHAT_MANAGEMENT,
@@ -345,10 +349,9 @@ class Operator(
                         callback(true)
                         getToast(context, "User has been blocked")
                     } else {
-                        getToast(context, "Error: ${error?.message}")
+                        getToast(context, "Error blocking user")
                         callback(false)
                     }
-
                 }
             }
         }

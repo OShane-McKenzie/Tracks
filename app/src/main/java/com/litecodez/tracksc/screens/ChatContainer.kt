@@ -65,6 +65,7 @@ import com.litecodez.tracksc.components.ChatBubble
 import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.GifImage
 import com.litecodez.tracksc.components.MessageInput
+import com.litecodez.tracksc.components.MoreOptions
 import com.litecodez.tracksc.components.NavigationDrawer
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.WallpaperSelector
@@ -128,13 +129,15 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
     var removeMask by rememberSaveable {
         mutableStateOf(false)
     }
+
     var showMoreOptions by rememberSaveable {
         mutableStateOf(false)
     }
+
     LaunchedEffect(true) {
-        //getToast(context, "${ contentProvider.currentChat.value?.id }")
         contentProvider.chatIdFromNotification.value = null
     }
+
     LaunchedEffect(Unit) {
         updateNotificationStatus(contentProvider, contentRepository)
         Controller.isChatContainerOpen.value = true
@@ -171,6 +174,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 contentProvider.currentChat.value.ifNotNull {
                     conversationWatcher.stopWatcher(it.id)
                 }
+                updateNotificationStatus(contentProvider, contentRepository)
             } catch (e: Exception) {
                 Log.e("Cleanup", "Error disposing of conversation watcher: ${e.message}")
             }
@@ -189,6 +193,12 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             }
         }else if(messages.value.isEmpty()){
             removeMask = true
+        }
+        contentProvider.currentChat.value.ifNotNull {
+            contentProvider.currentPlaylist.value = it.mediaLinks.toList()
+            if(Controller.isPlayListEnabled.value) {
+                contentProvider.nowPlaying.value = it.currentMediaLink
+            }
         }
     }
     Box(modifier = modifier) {
@@ -353,110 +363,14 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             }
         }
         if(showMoreOptions){
-            val scrollState = rememberScrollState()
-            Column(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(TCDataTypes.Fibonacci.EIGHT.dp)
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .background(
-                        color = contentProvider.majorThemeColor.value.copy(alpha = 0.7f),
-                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
-                    ),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
+            SimpleAnimator(
+                style = AnimationStyle.SCALE_IN_CENTER
             ) {
-                IconButton(
-                    onClick = {
-                        showMoreOptions = false
-                    }
-                ){
-                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close",
-                    tint = contentProvider.textThemeColor.value)
-                }
-                contentProvider.currentChat.value.ifNotNull { chat ->
-                    val interlocutor = chat.owners.find { it != getUserUid()!! }?:""
-                    val interlocutorName = contentProvider.tags.value.find { it.userId == interlocutor }?.name?:""
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(TCDataTypes.Fibonacci.EIGHT.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ){
-                        var isUserBlocked = contentProvider.restrictedUsers.value.contains(
-                            interlocutor
-                        )
-                        LaunchedEffect(Controller.reloadRestrictions){
-                            isUserBlocked = contentProvider.restrictedUsers.value.contains(
-                                interlocutor
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                if(chat.ownershipModel == TCDataTypes.OwnershipType.DUAL){
-                                    operator.restrictUserOperation(id = interlocutor, RestrictionType.BLOCK){ response ->
-                                        if(response){
-                                            val newMessage = MessageModel(
-                                                chatId = chat.id,
-                                                sender = getUserUid() ?: "",
-                                                senderName = getUserName(),
-                                                content = "${getUserName()} blocked $interlocutorName\n" +
-                                                        "$interlocutorName can still receive messages from ${getUserName()} unless they also block ${getUserName()}",
-                                                type = TCDataTypes.MessageType.MESSAGE_USER_BLOCKED,
-                                                timestamp = "${getCurrentDate()} ${getCurrentTime()}",
-                                                reactions = mutableListOf()
-                                            )
-                                            operator.sendMessageToStagingOperation(
-                                                messageModel = newMessage,
-                                                id = chat.id + getCurrentDate() + getCurrentTime()
-                                            ) { result ->
-                                                if (result.isError) {
-                                                    scope.launch(Dispatchers.Main) {
-                                                        getToast(context, "Error sending message: ${result.msg}")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = contentProvider.textThemeColor.value,
-                                contentColor = contentProvider.majorThemeColor.value),
-                            enabled = !isUserBlocked,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(0.4f)
-                        ) {
-                            Text(text = "Block ${contentProvider.tags.value.find { it.userId == interlocutor }?.name}",
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.basicMarquee()
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                if(chat.ownershipModel == TCDataTypes.OwnershipType.DUAL){
-                                    operator.restrictUserOperation(id = interlocutor, RestrictionType.UNBLOCK)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = contentProvider.textThemeColor.value,
-                                contentColor = contentProvider.majorThemeColor.value),
-                            enabled = isUserBlocked,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(0.4f)
-                        ) {
-                            Text(text = "Unblock ${contentProvider.tags.value.find { it.userId == interlocutor }?.name}",
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.basicMarquee()
-                            )
-                        }
-                    }
+                MoreOptions(modifier = Modifier.align(Alignment.TopCenter), operator = operator){
+                    showMoreOptions = it
                 }
             }
+
         }
 
         if(showUploadGif){
@@ -582,7 +496,6 @@ private fun handleImageAttachment(
                         listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
                         delay(200)
                         listState.animateScrollToItem(index = contentProvider.currentChat.value?.content?.lastIndex ?: 0)
-                        //listState.scrollToItem(messages.value.lastIndex)
                     }
                     
                     operator.sendMessageToStagingOperation(
@@ -590,7 +503,7 @@ private fun handleImageAttachment(
                         id = imageName
                     ) { result ->
                         if (result.isError) {
-                            getToast(context, "Error sending message: ${result.msg}")
+                            getToast(context, "Error sending message")
                         }
                     }
                 }
@@ -635,7 +548,7 @@ private fun handleTextMessage(
         ) { result ->
             if (result.isError) {
                 scope.launch(Dispatchers.Main) {
-                    getToast(context, "Error sending message: ${result.msg}")
+                    getToast(context, "Error sending message")
                 }
             }
         }

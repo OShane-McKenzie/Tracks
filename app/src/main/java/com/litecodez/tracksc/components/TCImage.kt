@@ -36,8 +36,7 @@ fun TCImage(modifier: Modifier = Modifier, img:String, remoteDatabase:String = D
             if (success) {
                 imageData = url
             } else {
-                getToast(context, "Image not found $url", long = true)
-                println("Image not found $img")
+                getToast(context, "Image not found", long = true)
             }
         }
     }
