@@ -24,7 +24,6 @@ class CustomWebView(context: Context) : WebView(context) {
                 throw e
             }
         }
-
     }
 
     @SuppressLint("MissingSuperCall")

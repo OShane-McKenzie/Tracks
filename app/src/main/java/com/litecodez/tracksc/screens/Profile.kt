@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -38,17 +39,19 @@ import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.generateUniqueID
+import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserEmail
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.home
 import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.objects.AnimationStyle
+import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
 import network.chaintech.cmpimagepickncrop.CMPImagePickNCropDialog
 import network.chaintech.cmpimagepickncrop.imagecropper.rememberImageCropper
 
 @Composable
-fun ProfileScreen(operator: Operator){
+fun ProfileScreen(operator: Operator, updating:Boolean = false){
     val imageCropper = rememberImageCropper()
     var selectedImage by remember { mutableStateOf<ImageBitmap?>(null) }
     var openImagePicker by rememberSaveable { mutableStateOf(value = false) }
@@ -57,6 +60,7 @@ fun ProfileScreen(operator: Operator){
     var showSnackBar by rememberSaveable { mutableStateOf(false) }
     var snackBarInfo by rememberSaveable { mutableStateOf("") }
     var showCircularProgress by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
 
     CMPImagePickNCropDialog(
         imageCropper = imageCropper,
@@ -163,11 +167,13 @@ fun ProfileScreen(operator: Operator){
             onClick = {
                 showCircularProgress = true
                 val userId = getUserUid()
-                if(
-                    selectedImage != null &&
-                    firstName.isNotEmpty() &&
-                    lastName.isNotEmpty() &&
-                    userId != null){
+                if(!updating) {
+                    if (
+                        selectedImage != null &&
+                        firstName.isNotEmpty() &&
+                        lastName.isNotEmpty() &&
+                        userId != null
+                    ) {
                         val userModel = UserModel(
                             firstName = firstName,
                             lastName = lastName,
@@ -176,28 +182,66 @@ fun ProfileScreen(operator: Operator){
                             isVerified = false,
                             isFirstTimeLogin = false,
                             profileImage = "$userId.png",
-                            tag = generateUniqueID(contentProvider.tags.value, length = 5, prefix = "@")
+                            tag = generateUniqueID(
+                                contentProvider.tags.value,
+                                length = 5,
+                                prefix = "@"
+                            )
                         )
                         operator.profileSetupOperation(
                             userModel = userModel,
                             image = selectedImage!!
-                        ){
+                        ) {
                             showCircularProgress = false
-                            if(it.isError){
+                            if (it.isError) {
                                 snackBarInfo = it.msg
                                 showSnackBar = true
-                            }else{
+                            } else {
                                 appNavigator.setViewState(home, updateHistory = false)
                             }
                         }
+                    } else {
+                        snackBarInfo = "Please fill all the fields"
+                        showSnackBar = true
+                    }
                 }else{
-                    snackBarInfo = "Please fill all the fields"
-                    showSnackBar = true
+                    if (
+                        firstName.isNotEmpty() &&
+                        lastName.isNotEmpty() &&
+                        userId != null
+                    ){
+                        val userModel = contentProvider.userProfile.value.copy(
+                            firstName = firstName,
+                            lastName = lastName
+                        )
+                        operator.profileUpdateOperation(
+                            userModel = userModel,
+                            image = selectedImage
+                        ){
+                            showCircularProgress = false
+                            if(it.isError){
+                                getToast(context = context, "Error updating profile")
+                            }
+                            appNavigator.setViewState(home, updateHistory = false, execTask = true){
+                                Controller.isUpdatingUserProfile.value = false
+                            }
+                        }
+                    }else{
+                        showCircularProgress = false
+                        appNavigator.setViewState(home, updateHistory = false, execTask = true){
+                            Controller.isUpdatingUserProfile.value = false
+                        }
+                    }
                 }
             },
             modifier = Modifier.align(Alignment.BottomEnd)
         ){
-            Text(text = "Let's go!")
+            if(!updating){
+                Text(text = "Let's go!")
+            }else{
+                Text(text = "Done")
+            }
+
         }
         if(showCircularProgress){
             CircularProgressIndicator(

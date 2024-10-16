@@ -12,6 +12,7 @@ import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.home
 import com.litecodez.tracksc.ifNotNull
+import com.litecodez.tracksc.ifNull
 import com.litecodez.tracksc.login
 import com.litecodez.tracksc.models.ConversationEditModel
 import com.litecodez.tracksc.models.MediaDeleteRequest
@@ -201,6 +202,61 @@ class Operator(
                     msg = "Could not send password reset email"
                 )
                 )
+            }
+        }
+    }
+
+    fun profileUpdateOperation(
+        userModel: UserModel,
+        image: ImageBitmap?,
+        callback: (OutcomeModel) -> Unit = {}){
+
+        contentRepository.updateDocument(
+            collectionPath = Databases.Collections.USERS,
+            documentId = userModel.id,
+            data = userModel.toMap()
+        ){ success, error ->
+            if(!success){
+                callback(OutcomeModel(isError = true, msg = "${error?.message}"))
+            }else{
+                contentProvider.userProfile.value = userModel
+                image.ifNotNull { bitmap ->
+                    contentRepository.uploadImage(
+                        bucket = Databases.Buckets.USER_PROFILE_IMAGES,
+                        imageBytes = bitmap.toByteArray(),
+                        imageName = userModel.id
+                    ){ outcome ->
+                        val userTag = contentProvider.tags.value.find { it.userId == userModel.id }
+                        userTag
+                            .ifNotNull {
+                                contentRepository.updateDocument(
+                                    collectionPath = Databases.Collections.TAGS,
+                                    documentId = it.id,
+                                    data = it.copy(
+                                        name = userModel.firstName +" "+userModel.lastName
+                                    ).toMap()
+                                ){
+                                    _, _ ->
+                                    Initializer.runInit(context){
+                                        callback(outcome)
+                                    }
+                                }
+                            }
+                            .ifNull {
+                                Initializer.runInit(context){
+                                    callback(outcome)
+                                }
+                            }
+                    }
+                }
+                image.ifNull {
+                    callback(
+                        OutcomeModel(
+                            isError = false,
+                            msg = "Profile updated"
+                        )
+                    )
+                }
             }
         }
     }

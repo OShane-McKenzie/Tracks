@@ -326,6 +326,23 @@ inline fun <T> T?.ifNotNull(block: (T) -> Unit):T? {
     return this
 }
 
+inline fun <T> T?.ifNotEmpty(block: (T) -> Unit): T? {
+    when (this) {
+        is Collection<*> -> if (this.isNotEmpty()) block(this)
+        is Map<*, *> -> if (this.isNotEmpty()) block(this)
+        is CharSequence -> if (this.isNotEmpty()) block(this)
+        else -> if (this != null) block(this)
+    }
+    return this
+}
+
+inline fun <T> T?.ifNull(block: () -> Unit): T? {
+    if (this == null) {
+        block()
+    }
+    return this
+}
+
 
 fun UserModel.toMap(): Map<String, Any> {
     return mapOf(

@@ -72,8 +72,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         // Check and request the user to disable battery optimizations
-        //requestDisableBatteryOptimizations()
-
         try {
             // Load preferences for theme colors and wallpaper
             val minor = loadPreferences(applicationContext, "minorColor", "0xFFAC9D9D")

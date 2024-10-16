@@ -46,6 +46,7 @@ object Initializer {
 
             }?.then {
                 contentProvider.tags.value = tagsList
+                processCounter++
             }
         }
 
@@ -108,11 +109,12 @@ object Initializer {
                 }
             }
             contentProvider.conversations.value = conversations
+            processCounter++
         }
 
         scope.launch {
             while (true) {
-                if(processCounter <1){
+                if(processCounter <2){
                     continue
                 }else{
                     callBack()

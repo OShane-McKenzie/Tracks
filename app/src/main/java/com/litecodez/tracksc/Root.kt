@@ -95,7 +95,7 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    ProfileScreen(operator)
+                    ProfileScreen(operator, Controller.isUpdatingUserProfile.value)
                 }
             }
             home->{

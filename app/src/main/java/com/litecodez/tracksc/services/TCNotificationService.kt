@@ -191,11 +191,10 @@ class TCNotificationService : LifecycleService() {
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)  // This auto-cancels the notification after tap
             .build()
-
-        notificationManager.notify(notificationId, notification)
+        if(message.type != TCDataTypes.MessageType.MEDIA_NOTIFICATION) {
+            notificationManager.notify(notificationId, notification)
+        }
     }
-
-
 
     private fun handleNotificationError(notification: NotificationModel, error: Exception) {
         error.printStackTrace()

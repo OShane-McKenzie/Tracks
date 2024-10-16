@@ -24,4 +24,5 @@ object Controller {
     val reloadRestrictions = mutableStateOf(false)
     val isInBackground = mutableStateOf(false)
     val isPlayListEnabled = mutableStateOf(false)
+    val isUpdatingUserProfile = mutableStateOf(false)
 }

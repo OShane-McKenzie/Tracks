@@ -21,12 +21,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardOptionKey
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,12 +44,15 @@ import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatList
+import com.litecodez.tracksc.components.ExternalOptions
+import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.TCImage
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.models.TagsModel
+import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
@@ -62,7 +70,9 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
+    var showExternalOptions by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(Unit){
         if(Controller.isDelayedProfileDocument.value){
             Initializer.initUserProfile(context){}
@@ -124,6 +134,15 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 .align(Alignment.TopCenter),
             operator = operator
         )
+        if(showExternalOptions){
+            SimpleAnimator(
+                style = AnimationStyle.DOWN
+            ) {
+                ExternalOptions(modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.TopCenter), operator)
+            }
+        }
         Box(modifier = Modifier
             .align(Alignment.TopCenter)
             .fillMaxWidth()){
@@ -176,18 +195,19 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                     .padding(end = TCDataTypes.Fibonacci.TWENTY_ONE.dp)
 
             ){
-                Icon(
-                    imageVector = Icons.Default.KeyboardOptionKey,
-                    contentDescription = "",
-                    tint = contentProvider.textThemeColor.value,
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .size(TCDataTypes.Fibonacci.TWENTY_ONE.dp)
-                        .clickable {}
-                )
+                IconButton(onClick = { showExternalOptions = !showExternalOptions }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardOptionKey,
+                        contentDescription = "",
+                        tint = contentProvider.textThemeColor.value,
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .size(TCDataTypes.Fibonacci.TWENTY_ONE.dp)
+                    )
+                }
             }
         }
     }
-    //DragAndDropExample(modifier = Modifier.fillMaxSize())
+
 }
 
