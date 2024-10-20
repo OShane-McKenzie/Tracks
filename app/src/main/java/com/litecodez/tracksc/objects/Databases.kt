@@ -1,5 +1,7 @@
 package com.litecodez.tracksc.objects
 
+import com.litecodez.tracksc.models.AudioRecorder
+
 object Databases {
     object Collections{
         const val USERS = "users"
@@ -39,6 +41,7 @@ object Databases {
     object Local {
         const val MEDIA_DB = "media.db"
         const val IMAGES_DB = "$MEDIA_DB/images"
+        const val AUDIO_DB = "$MEDIA_DB/audio"
         const val IMAGE_DATA = "images.json"
     }
 }

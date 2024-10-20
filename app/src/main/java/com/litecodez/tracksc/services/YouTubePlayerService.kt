@@ -17,6 +17,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.NotificationCompat
+import com.gu.toolargetool.TooLargeTool
 import com.litecodez.tracksc.MainActivity
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.contentProvider
@@ -34,11 +35,12 @@ class YouTubePlayerService : Service() {
     override fun onBind(intent: Intent): IBinder {
         return binder
     }
-
+    //private val application = this.getApplication()
     override fun onCreate() {
         super.onCreate()
         createWebView()
         startForegroundService()
+        TooLargeTool.startLogging(this.application)
     }
 
     @SuppressLint("SetJavaScriptEnabled")

@@ -63,10 +63,13 @@ import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.chatContainer
 import com.litecodez.tracksc.components.ChatBubble
 import com.litecodez.tracksc.components.CustomSnackBar
+import com.litecodez.tracksc.components.EnhancedZoomableContent
 import com.litecodez.tracksc.components.GifImage
+import com.litecodez.tracksc.components.ImageInChat
 import com.litecodez.tracksc.components.MessageInput
 import com.litecodez.tracksc.components.MoreOptions
 import com.litecodez.tracksc.components.NavigationDrawer
+import com.litecodez.tracksc.components.RecordingDisplay
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.WallpaperSelector
 import com.litecodez.tracksc.components.setColorIfDarkTheme
@@ -81,6 +84,7 @@ import com.litecodez.tracksc.getUserName
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.keyFor
+import com.litecodez.tracksc.models.AudioRecorder
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.ReactionModel
@@ -107,7 +111,7 @@ import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
+fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,operator: Operator) {
     val context = LocalContext.current
     val messages = remember { derivedStateOf { contentProvider.currentChat.value?.content ?: listOf(MessageModel()) } }
     var showSnackBar by remember { mutableStateOf(false) }
@@ -134,6 +138,15 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
         mutableStateOf(false)
     }
 
+    var enlargeMessage by remember {
+        mutableStateOf(false)
+    }
+    var imageData by remember {
+        mutableStateOf<Any>("")
+    }
+    var isRecording by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(true) {
         contentProvider.chatIdFromNotification.value = null
     }
@@ -238,6 +251,12 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                     ChatBubbleWrapper(
                         message = message,
                         index = index,
+                        onClick = {
+                            if(message.type == TCDataTypes.MessageType.IMAGE){
+                                imageData = it
+                                enlargeMessage = true
+                            }
+                        },
                         onDeleted = {
                             selectedMessageIndex = it
                             showDeleteMessageDialog = true
@@ -265,9 +284,12 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
                 handleImageAttachment(imageBitmap, context, contentProvider, operator, listState, scope){
                     showUploadGif = false
                 }
+            },
+            onStartRecording = {
+                isRecording = it
             }
         ) { message ->
-            handleTextMessage(context, message, contentProvider, operator, listState, scope)
+            handleTextMessage(context, message, contentProvider, operator, listState, scope = scope)
         }
 
         if (showSnackBar) {
@@ -372,7 +394,33 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             }
 
         }
-
+        if(isRecording){
+            RecordingDisplay(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxHeight(0.5f).fillMaxWidth(0.9f),
+                audioRecorder = audioRecorder,
+                onCancel = {
+                    isRecording = it
+                }
+            ){ b,fi->
+                isRecording = false
+                showUploadGif = true
+                contentRepository.uploadAudio(fi){
+                    showUploadGif = false
+                    handleTextMessage(
+                        context, fi.name,
+                        contentProvider,
+                        operator,
+                        listState,
+                        type = TCDataTypes.MessageType.AUDIO,
+                        scope = scope
+                    ){
+                        showUploadGif = false
+                    }
+                }
+            }
+        }
         if(showUploadGif){
             SimpleAnimator(
                 style = AnimationStyle.SCALE_IN_CENTER,
@@ -388,9 +436,32 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
             }
         }
     }
+    if(enlargeMessage){
+       SimpleAnimator(
+           style = AnimationStyle.SCALE_IN_CENTER
+       ) {
+           EnhancedZoomableContent(
+               modifier = Modifier.fillMaxSize()
+           ) {
+               Box(
+                   modifier = Modifier.fillMaxSize()
+               ) {
+                   ImageInChat(img = imageData)
+
+                   IconButton(onClick = { enlargeMessage = false }, modifier = Modifier.align(Alignment.TopEnd)) {
+                       Icon(
+                           imageVector = Icons.Default.Close,
+                           contentDescription = ""
+                       )
+                   }
+               }
+           }
+        }
+    }
 
     DisposableEffect(key1 = Unit) {
         onDispose {
+            isRecording = false
             cleanupConversation(contentProvider, conversationWatcher)
         }
     }
@@ -400,6 +471,7 @@ fun ChatContainer(modifier: Modifier = Modifier, operator: Operator) {
 private fun ChatBubbleWrapper(
     message: MessageModel,
     index: Int,
+    onClick:(Any) -> Unit,
     onDeleted: (Int) -> Unit,
     onReactionUpdated: (List<ReactionModel>) -> Unit
 ) {
@@ -410,6 +482,7 @@ private fun ChatBubbleWrapper(
             message = composition,
             index = index,
             modifier = Modifier.fillMaxWidth(),
+            onClick = onClick,
             onDeleted = onDeleted,
             onReacted = onReactionUpdated
         )
@@ -519,7 +592,9 @@ private fun handleTextMessage(
     contentProvider: ContentProvider,
     operator: Operator,
     listState: LazyListState,
-    scope: CoroutineScope
+    type:String = TCDataTypes.MessageType.TEXT,
+    scope: CoroutineScope,
+    onMessageSent: () -> Unit = {}
 ) {
     val trimmedMessage = message.trim()
     if (trimmedMessage.isNotEmpty()) {
@@ -528,7 +603,7 @@ private fun handleTextMessage(
             sender = getUserUid() ?: "",
             senderName = getUserName(),
             content = trimmedMessage,
-            type = TCDataTypes.MessageType.TEXT,
+            type = type,
             timestamp = "${getCurrentDate()} ${getCurrentTime()}",
             reactions = mutableListOf()
         )
@@ -551,6 +626,7 @@ private fun handleTextMessage(
                     getToast(context, "Error sending message")
                 }
             }
+            onMessageSent()
         }
     }
 }
@@ -576,6 +652,18 @@ private fun handleMessageDeletion(context: Context, contentProvider: ContentProv
                             operator.operationScope.launch {
                                 try{
                                     deleteFile(context, Databases.Local.IMAGES_DB, currentMessage.content + ".png")
+                                }catch (e:IOException){
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                    }
+
+                    if(messageType == TCDataTypes.MessageType.AUDIO) {
+                        operator.sendMediaDeletionRequest(mediaDeletionRequest){
+                            operator.operationScope.launch {
+                                try{
+                                    deleteFile(context, Databases.Local.AUDIO_DB, currentMessage.content)
                                 }catch (e:IOException){
                                     e.printStackTrace()
                                 }
@@ -614,6 +702,7 @@ private fun cleanupConversation(contentProvider: ContentProvider, conversationWa
         }
         contentProvider.currentChat.value = null
         Controller.isChatContainerOpen.value = false
+        Controller.initialConversationWatchAcknowledged.value = false
     } catch (e: Exception) {
         Log.e("Cleanup", "Error disposing of conversation watcher: ${e.message}")
     }

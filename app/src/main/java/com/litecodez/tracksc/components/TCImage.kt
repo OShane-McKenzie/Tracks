@@ -18,17 +18,21 @@ import com.litecodez.tracksc.saveBitmapToFile
 import java.io.File
 
 @Composable
-fun TCImage(modifier: Modifier = Modifier, img:String, remoteDatabase:String = Databases.Buckets.USER_UPLOADS){
+fun TCImage(
+    modifier: Modifier = Modifier,
+    img: String,
+    remoteDatabase: String = Databases.Buckets.USER_UPLOADS
+) {
     val context = LocalContext.current
     val path = context.filesDir
     val dir = File(path, Databases.Local.IMAGES_DB)
     val imgFile = File(dir, img)
-    val localImageFound = remember{ imgFile.exists() }
-    var imageData by rememberSaveable {
-        mutableStateOf<Any>("")
-    }
+    val localImageFound = remember { imgFile.exists() }
 
-    fun getImage(){
+    var imageData by remember { mutableStateOf<Any>(if (localImageFound) imgFile else "") }
+
+    // Function to get the image from the remote database
+    fun getImage() {
         contentRepository.getImageUrl(
             bucket = remoteDatabase,
             imageName = img
@@ -40,19 +44,24 @@ fun TCImage(modifier: Modifier = Modifier, img:String, remoteDatabase:String = D
             }
         }
     }
+
+    // Load the image either from local storage or remotely
     LaunchedEffect(Unit) {
-        if(!localImageFound){
+        if (!localImageFound) {
             getImage()
-        }else{
+        } else {
+            // If local image is found, directly set the imageData to the decoded file
             imageData = BitmapFactory.decodeFile(imgFile.absolutePath)
         }
     }
 
-    ImageInChat(modifier = modifier, img = imageData, defaultImage = R.drawable.user){
+    // Use ImageInChat to display the image
+    ImageInChat(modifier = modifier, img = imageData, defaultImage = R.drawable.user) { bitmap ->
+        // Save the bitmap to local storage after it's successfully loaded
         saveBitmapToFile(
             context = context,
             fileLocation = Databases.Local.IMAGES_DB,
-            bitmap = it,
+            bitmap = bitmap,
             fileName = img
         )
     }

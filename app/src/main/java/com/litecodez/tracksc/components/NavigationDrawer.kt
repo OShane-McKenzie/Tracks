@@ -1,6 +1,8 @@
 package com.litecodez.tracksc.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +50,7 @@ import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.TCDataTypes
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator: Operator,onMore: () -> Unit = {},onDismiss: (Boolean) -> Unit = {}){
 
@@ -94,7 +97,14 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                             text = "Wallpaper",
                             fontSize = TCDataTypes.Fibonacci.TWENTY_ONE.sp,
                             color = contentProvider.textThemeColor.value,
-                            modifier = Modifier.clickable {
+                            modifier = Modifier
+                                .border(
+                                    width = 2.dp,
+                                    color = contentProvider.textThemeColor.value,
+                                    shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT)
+                                )
+                                .padding(8.dp)
+                                .clickable {
                                 Controller.showWallpaperSelector.value = true
                                 onDismiss(false)
                             }
@@ -178,12 +188,15 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                                 customLink = it
                             },
                             label = {
-                                Text(text = "Add custom link (youtube)")
+                                Text(text = "Add custom link (youtube)", modifier = Modifier.basicMarquee())
                             },
                             colors = TextFieldDefaults.colors().copy(
                                 focusedTextColor = contentProvider.textThemeColor.value,
                                 focusedContainerColor = contentProvider.majorThemeColor.value
-                            )
+                            ),
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            maxLines = 1,
+                            singleLine = true
                         )
                         Text(
                             text = "Add",

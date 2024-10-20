@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -28,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -47,6 +45,7 @@ import com.litecodez.tracksc.components.ChatList
 import com.litecodez.tracksc.components.ExternalOptions
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.TCImage
+import com.litecodez.tracksc.components.WaveEffect
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getUserUid
@@ -134,6 +133,8 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 .align(Alignment.TopCenter),
             operator = operator
         )
+
+        //WaveEffect(modifier = Modifier.fillMaxWidth().height(13.dp).align(Alignment.Center))
         if(showExternalOptions){
             SimpleAnimator(
                 style = AnimationStyle.DOWN
@@ -208,6 +209,5 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
             }
         }
     }
-
 }
 

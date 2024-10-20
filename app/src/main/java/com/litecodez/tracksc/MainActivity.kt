@@ -11,22 +11,22 @@ import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.ImageAnimation
 import com.litecodez.tracksc.components.setColorIfDarkTheme
+import com.litecodez.tracksc.models.AudioPlayer
 import com.litecodez.tracksc.models.YouTubePlayerViewModel
 import com.litecodez.tracksc.objects.AppNavigator
 import com.litecodez.tracksc.objects.AuthenticationManager
@@ -34,9 +34,9 @@ import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.CustomExceptionHandler
+import com.litecodez.tracksc.objects.Dependencies
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.Watchers
-import com.litecodez.tracksc.services.CustomSecurityManager
 import com.litecodez.tracksc.ui.theme.TracksTheme
 
 val appNavigator = AppNavigator()
@@ -46,17 +46,18 @@ val conversationWatcher = Watchers()
 val notificationWatcher = Watchers()
 val tagsWatcher = Watchers()
 val tcConnectionWatcher = Watchers()
+val audioPlayer = AudioPlayer()
 
 class MainActivity : ComponentActivity() {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tcYouTubePlayerViewModel = YouTubePlayerViewModel(this.application)
-        // Initialize authentication manager
-        val authenticationManager = AuthenticationManager(this, context = applicationContext)
-        val operator = Operator(context = applicationContext, authenticationManager = authenticationManager)
+//        val tcYouTubePlayerViewModel = YouTubePlayerViewModel(this.application)
+//        val authenticationManager = AuthenticationManager(this, context = applicationContext)
+//        val operator = Operator(context = applicationContext, authenticationManager = authenticationManager)
 
+        val dependencies = Dependencies(applicationContext, this.application, this)
         // Initialize the launcher for the POST_NOTIFICATIONS permission
         requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -69,8 +70,7 @@ class MainActivity : ComponentActivity() {
         requestPermission()
 
         // Enable edge-to-edge layout
-        enableEdgeToEdge()
-
+        // enableEdgeToEdge()
         // Check and request the user to disable battery optimizations
         try {
             // Load preferences for theme colors and wallpaper
@@ -100,35 +100,40 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TracksTheme {
-                if (Controller.isPostNotificationPermissionGranted.value) {
-                    // Render the main content if notification permission is granted
-                    Root(operator, authenticationManager, tcYouTubePlayerViewModel)
-                } else {
-                    // Render a notification permission prompt if not granted
-                    Box(
-                        modifier = Modifier.fillMaxSize().padding(34.dp),
-                    ) {
-                        Button(
-                            modifier = Modifier.align(Alignment.TopCenter),
-                            onClick = { openNotificationSettings() }
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    if (Controller.isPostNotificationPermissionGranted.value) {
+                        // Render the main content if notification permission is granted
+                        //operator, authenticationManager, tcYouTubePlayerViewModel,
+                        Root(dependencies)
+                    } else {
+                        // Render a notification permission prompt if not granted
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
                         ) {
-                            Text("Open Notification Settings")
+                            Button(
+                                modifier = Modifier.align(Alignment.TopCenter),
+                                onClick = { openNotificationSettings() }
+                            ) {
+                                Text("Open Notification Settings")
+                            }
+                            ImageAnimation(
+                                image = R.drawable.tc_logo_no_bg,
+                                colorAnim = false,
+                                startDelay = 0.5f,
+                                size = 200,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         }
-                        ImageAnimation(
-                            image = R.drawable.tc_logo_no_bg,
-                            colorAnim = false,
-                            startDelay = 0.5f,
-                            size = 200,
-                            modifier = Modifier.align(Alignment.Center)
+                        CustomSnackBar(
+                            info = "Please enable notification permission to continue",
+                            containerColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black),
+                            textColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black, invert = false),
+                            isVisible = true,
+                            duration = 100000
                         )
                     }
-                    CustomSnackBar(
-                        info = "Please enable notification permission to continue",
-                        containerColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black),
-                        textColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black, invert = false),
-                        isVisible = true,
-                        duration = 100000
-                    )
                 }
             }
         }

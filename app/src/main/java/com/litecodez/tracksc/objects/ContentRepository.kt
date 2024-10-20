@@ -1,6 +1,7 @@
 package com.litecodez.tracksc.objects
 
 import android.content.Context
+import android.net.Uri
 import android.util.JsonToken
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -32,6 +33,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.io.File
 
 
 class ContentRepository {
@@ -149,9 +151,46 @@ class ContentRepository {
                 onComplete(false,"$it")
             }
         }
-
     }
-    fun downloadImageAsByteArray(bucket:String, imageName:String, onFailure: (Exception) -> Unit = {}, onSuccess: (ByteArray) -> Unit = {},) {
+    fun uploadAudio(audioFile: File, onFailure: (Exception) -> Unit = {}, onSuccess: (Uri) -> Unit = {}) {
+
+        val audioRef= storageRef.child("audio/${audioFile.name}")
+
+        val uploadTask = audioRef.putFile(Uri.fromFile(audioFile))
+
+        uploadTask.addOnSuccessListener {
+            // Handle successful upload
+            audioRef.downloadUrl.addOnSuccessListener { uri ->
+                // Do something with the download URL, if needed
+                onSuccess(uri)
+            }
+        }.addOnFailureListener {
+            // Handle failed upload
+            onFailure(it)
+            it.printStackTrace()
+        }
+    }
+    fun downloadAudio(fileName: String, localDir: File, onFailure: (Exception) -> Unit = {}, onSuccess: (File) -> Unit = {}) {
+
+        val audioRef = storageRef.child("audio/$fileName")
+
+        // Create a local file where the audio will be saved
+        val localFile = File(localDir, fileName)
+
+        // Download the file and save it locally
+        audioRef.getFile(localFile)
+            .addOnSuccessListener {
+                // Handle successful download
+                println("File downloaded successfully: ${localFile.absolutePath}")
+                onSuccess(localFile) // Pass the local file to the onSuccess callback
+            }
+            .addOnFailureListener { exception ->
+                // Handle failed download
+                exception.printStackTrace()
+                onFailure(exception) // Pass the error to the onFailure callback
+            }
+    }
+    fun downloadImageAsByteArray(bucket:String, imageName:String, onFailure: (Exception) -> Unit = {}, onSuccess: (ByteArray) -> Unit = {}) {
         storageRef.child("$bucket/$imageName")
 
         // Specify the maximum size (in bytes) to download

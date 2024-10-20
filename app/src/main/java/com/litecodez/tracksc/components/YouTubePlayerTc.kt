@@ -94,7 +94,7 @@ fun YouTubePlayerTc(
     LaunchedEffect(contentProvider.playerState.intValue) {
         if(contentProvider.playerState.intValue == 0 && !Controller.isPlayListEnabled.value){
             viewModel.pause()
-            println("PlayerStateReflected: "+viewModel.isTcPlayerPlaying)
+            //println("PlayerStateReflected: "+viewModel.isTcPlayerPlaying)
         }else if(Controller.isPlayListEnabled.value && contentProvider.playerState.intValue == 0){
             nextVideo(context)
             contentProvider.currentChat.value.ifNotNull {  chat ->
@@ -142,10 +142,19 @@ fun YouTubePlayerTc(
     }
     Box(
         modifier = modifier
-            .height(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else
-                TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
-            .width(if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else
-                TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp)
+            .height(
+                if (!showSongDetails && !showStopButton) {
+                    TCDataTypes.Fibonacci.FIFTY_FIVE.dp
+                } else if(showSongDetails && !showStopButton) {
+                    TCDataTypes.Fibonacci.FIFTY_FIVE.dp
+                }else{
+                    TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp
+                }
+            )
+            .width(
+                if (!showSongDetails && !showStopButton) TCDataTypes.Fibonacci.FIFTY_FIVE.dp else
+                    TCDataTypes.Fibonacci.TWO_HUNDRED_AND_33.dp
+            )
     ) {
         if(showSongDetails){
             SimpleAnimator(
@@ -226,7 +235,7 @@ fun YouTubePlayerTc(
                                 sendMessage("${getUserName()} Disabled playback")
                             }else{
                                 Controller.mediaPlayerReady.value = true
-                                Controller.stopPlayer.value = true
+                                Controller.stopPlayer.value = false
                                 showStopButton = false
                                 sendMessage("${getUserName()} Enabled playback")
                             }

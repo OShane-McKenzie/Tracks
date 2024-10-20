@@ -51,5 +51,6 @@ class ContentProvider {
     val chatIdFromNotification = mutableStateOf<String?>(null)
     val restrictedUsers = mutableStateOf<List<String>>(listOf())
     val playlistAutoplayEnabledDisabledRegister = mutableStateOf<List<String>>(listOf())
+    val currentVoiceNote = mutableStateOf<String>("")
 
 }

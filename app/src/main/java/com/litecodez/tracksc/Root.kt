@@ -27,6 +27,7 @@ import com.litecodez.tracksc.models.YouTubePlayerViewModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Controller
+import com.litecodez.tracksc.objects.Dependencies
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.screens.ChatContainer
 import com.litecodez.tracksc.screens.HomeScreen
@@ -38,7 +39,7 @@ import kotlin.math.roundToInt
 
 @SuppressLint("SourceLockedOrientationActivity")
 @Composable
-fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewModel: YouTubePlayerViewModel){
+fun Root(dependencies: Dependencies){
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = context as Activity
@@ -79,7 +80,7 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                 SimpleAnimator(
                     style = AnimationStyle.SCALE_IN_CENTER,
                 ) {
-                    SplashScreen(operator, authenticationManager)
+                    SplashScreen(dependencies.operator, dependencies.authenticationManager)
                 }
 
             }
@@ -87,7 +88,7 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    LoginScreen(operator, authenticationManager)
+                    LoginScreen(dependencies.operator, dependencies.authenticationManager)
                 }
 
             }
@@ -95,21 +96,21 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    ProfileScreen(operator, Controller.isUpdatingUserProfile.value)
+                    ProfileScreen(dependencies.operator, Controller.isUpdatingUserProfile.value)
                 }
             }
             home->{
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    HomeScreen(operator, authenticationManager)
+                    HomeScreen(dependencies.operator, dependencies.authenticationManager)
                 }
             }
             chatContainer->{
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    ChatContainer(modifier = Modifier.fillMaxSize(), operator = operator)
+                    ChatContainer(modifier = Modifier.fillMaxSize(), audioRecorder = dependencies.audioRecorder,operator = dependencies.operator)
                 }
             }
         }
@@ -124,7 +125,7 @@ fun Root(operator: Operator, authenticationManager: AuthenticationManager,viewMo
                         moveY += dragAmount.y
                     }
                     detectTapGestures { }
-                }, viewModel = viewModel, operator
+                }, viewModel = dependencies.tcYouTubePlayerViewModel, dependencies.operator
             )
         }
     }

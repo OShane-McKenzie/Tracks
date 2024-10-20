@@ -37,6 +37,7 @@ object TCDataTypes {
         const val EIGHT = 8
         const val THIRTEEN = 13
         const val TWENTY_ONE = 21
+        const val THIRTY_FOUR = 34
         const val FIFTY_FIVE = 55
         const val EIGHTY_NINE = 89
         const val ONE_HUNDRED_AND_44 = 144

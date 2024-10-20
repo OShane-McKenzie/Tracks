@@ -82,6 +82,7 @@ class ConversationService : LifecycleService() {
             contentProvider.currentPlaylist.value = updatedChat.mediaLinks
             if(Controller.initialConversationWatchAcknowledged.value) {
                 contentProvider.nowPlaying.value = updatedChat.currentMediaLink
+                contentProvider.currentPlaylist.value = updatedChat.mediaLinks
             }
         }
         Controller.reloadMessage.value = !Controller.reloadMessage.value

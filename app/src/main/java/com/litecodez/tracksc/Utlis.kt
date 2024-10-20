@@ -21,6 +21,12 @@ import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.HasId
 import com.litecodez.tracksc.models.MediaDeleteRequest
 import com.litecodez.tracksc.objects.Controller
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.apache.commons.compress.compressors.CompressorStreamFactory
 import java.io.ByteArrayOutputStream
@@ -677,9 +683,19 @@ fun nextVideo(context: Context) {
         val currentIndex = getIndexOfVideo()
 
         val nextIndex = (currentIndex + 1) % playlist.size
+        CoroutineScope(Dispatchers.Default).launch{
+            withContext(Dispatchers.Main){
+                contentProvider.nowPlaying.value = ""
+            }
+            delay(20)
+            withContext(Dispatchers.Main){
+                contentProvider.nowPlaying.value = playlist[nextIndex]
+                contentProvider.incrementer.intValue = nextIndex
+            }
+            delay(10)
+            this.cancel()
+        }
 
-        contentProvider.nowPlaying.value = playlist[nextIndex]
-        contentProvider.incrementer.intValue = nextIndex
     } else {
         getToast(context, "Playlist is empty")
         Controller.isPlayListEnabled.value = false
