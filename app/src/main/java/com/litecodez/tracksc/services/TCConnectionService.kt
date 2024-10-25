@@ -3,17 +3,25 @@ package com.litecodez.tracksc.services
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
+import com.litecodez.tracksc.ifNotEmpty
+import com.litecodez.tracksc.loading
 import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.tcConnectionWatcher
 import com.litecodez.tracksc.toMessageModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TCConnectionService : LifecycleService() {
 
@@ -37,10 +45,12 @@ class TCConnectionService : LifecycleService() {
     private suspend fun monitorConnectionRequests(userRequestOutcomeDoc: String) {
         tcConnectionWatcher.watch(
             collection = Databases.Collections.CONNECTION_REQUEST_OUTCOME,
-            target = userRequestOutcomeDoc
+            target = userRequestOutcomeDoc,
+            key = "connectionService"
         ) { data ->
             processConnectionRequestOutcomes(data)
         }
+
     }
 
 //    private suspend fun monitorEstablishedConnections(userId: String) {
@@ -63,9 +73,13 @@ class TCConnectionService : LifecycleService() {
 
         handleRefusedRequests(refusedRequests)
 
-        if (approvedRequests.isNotEmpty()) {
-            Initializer.initConversations()
+        approvedRequests.ifNotEmpty {
+            getToast(applicationContext, "Connected with ${it.firstOrNull()?.keys?.firstOrNull()}")
+            Initializer.initConversations {
+                appNavigator.setViewState(loading)
+            }
         }
+
 
         updateRequestOutcomes(requestOutcomes)
     }
@@ -99,5 +113,6 @@ class TCConnectionService : LifecycleService() {
     override fun onDestroy() {
         super.onDestroy()
         tcConnectionWatcher.stopAllWatchers()
+        Controller.isService3Initialized.value = false
     }
 }

@@ -130,7 +130,8 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                                 ) { target ->
                                     if (target.userId != getUserUid()) {
                                         getUserUid().ifNotNull {
-                                            getToast(context, "Connecting to ${target.name}")
+                                            contentProvider.listOfConnectionRequests.value = contentProvider.listOfConnectionRequests.value.plus(target)
+                                            getToast(context, "Connecting to ${target.name}...", long = true)
                                             operator.sendConnectionRequest(
                                                 TrackConnectionRequestModel(
                                                     senderId = it,

@@ -9,6 +9,8 @@ const val splash: String = "splash"
 const val profile:String = "profile"
 const val home:String = "home"
 const val chatContainer:String = "chatContainer"
+const val loading:String = "loading"
+const val delete:String = "delete"
 
 
 const val baseApi:String = "https://oshane-mckenzie.github.io/TracksRepo/app"

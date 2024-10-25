@@ -38,7 +38,9 @@ object Initializer {
                         this.name = it.data?.get("name")?.toString() ?: ""
                         this.type = it.data?.get("type")?.toString() ?: ""
                         this.photoUrl = it.data?.get("photoUrl")?.toString() ?: ""
-                        tagsList.add(this)
+                        if(!tagsList.contains(this)){
+                            tagsList.add(this)
+                        }
                     }
                 }catch (e:Exception){
                     e.printStackTrace()
@@ -170,7 +172,9 @@ object Initializer {
                         this.name = it.data?.get("name")?.toString() ?: ""
                         this.type = it.data?.get("type")?.toString() ?: ""
                         this.photoUrl = it.data?.get("photoUrl")?.toString() ?: ""
-                        tagsList.add(this)
+                        if(!tagsList.contains(this)){
+                            tagsList.add(this)
+                        }
                     }
                 }catch (e:Exception){
                     e.printStackTrace()
@@ -203,7 +207,7 @@ object Initializer {
         }
     }
 
-    fun initConversations(){
+    fun initConversations(callBack: ()->Unit = {}){
         contentRepository.getAllUserConversationDocuments(Databases.Collections.CONVERSATIONS){ documentSnapshots ->
             val conversations = mutableListOf<ChatModel>()
             documentSnapshots?.forEach { document ->
@@ -229,6 +233,7 @@ object Initializer {
             }
             contentProvider.conversations.value = conversations
             Controller.reloadList.value = !Controller.reloadList.value
+            callBack.invoke()
         }
     }
 }

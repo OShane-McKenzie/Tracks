@@ -28,8 +28,10 @@ import com.litecodez.tracksc.toMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.system.exitProcess
 
 class Operator(
     private val context: Context,
@@ -283,6 +285,13 @@ class Operator(
                     imageBytes = image.toByteArray(),
                     imageName = userModel.id
                 ){
+                    contentProvider.userTag.value = TagsModel(
+                        id = userModel.tag,
+                        userId = userModel.id,
+                        name = "${ userModel.firstName } ${ userModel.lastName }",
+                        type = TCDataTypes.TagType.PERSON,
+                        photoUrl = userModel.profileImage
+                    )
                     contentRepository.createDocument(
                         collectionPath = Databases.Collections.TAGS,
                         documentId = userModel.tag,
@@ -333,6 +342,8 @@ class Operator(
     }
 
     fun sendConversationManagementRequest(editModel: ConversationEditModel,callback: (OutcomeModel) -> Unit = {}){
+
+
         contentRepository.createDocument(
             collectionPath = Databases.Collections.CHAT_MANAGEMENT,
             documentId = editModel.conversationId,
@@ -340,6 +351,16 @@ class Operator(
         ){
             callback(it)
         }
+        val conv = contentProvider.conversations.value.find { it.id == editModel.conversationId }
+        operationScope.launch {
+            delay(250)
+            conv.ifNotNull {
+                withContext(Dispatchers.Main){
+                    contentProvider.conversations.value = contentProvider.conversations.value.minus(it)
+                }
+            }
+        }
+
     }
     fun sendMediaDeletionRequest(
         mediaDeleteRequest: MediaDeleteRequest,
@@ -411,6 +432,55 @@ class Operator(
                 }
             }
         }
+    }
+
+    fun deleteAccountOperation(){
+        val userId = getUserUid()
+        userId.ifNotNull { uid ->
+            contentRepository.createDocument(
+                Databases.Collections.ACCOUNT_DELETION_REQUESTS,
+                documentId = getCurrentDate() + "~" + getCurrentTime(),
+                data = mapOf("userId" to uid)
+            ){
+
+                val userTag = contentProvider.tags.value.find { it.userId == getUserUid() }
+                userTag.ifNotNull {
+                    contentRepository.deleteDocument(
+                        Databases.Collections.TAGS,
+                        documentId = it.id
+                    ){ success, error ->
+                        operationScope.launch {
+                            withContext(Dispatchers.Main){
+                                contentProvider.deleteAccountMessage.value = "Exiting..."
+                            }
+                            delay(2000)
+                            withContext(Dispatchers.Main){
+                                DataManager(context).clearAppData()
+                                exitProcess(0)
+                            }
+                        }
+                    }
+                    //authenticationManager.signOut()
+                }
+                    .ifNull {
+                        //authenticationManager.signOut()
+                        operationScope.launch {
+                            withContext(Dispatchers.Main){
+                                contentProvider.deleteAccountMessage.value = "Exiting..."
+                            }
+                            delay(2000)
+                            withContext(Dispatchers.Main){
+                                DataManager(context).clearAppData()
+                                exitProcess(0)
+                            }
+                        }
+                    }
+            }
+        }
+            .ifNull {
+                getToast(context, "Error sending account deletion request")
+            }
+
     }
 }
 

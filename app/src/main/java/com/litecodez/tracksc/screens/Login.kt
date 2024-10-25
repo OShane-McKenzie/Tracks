@@ -367,6 +367,7 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                             snackBarInfo = it.msg
                             showSnackBar = true
                             processRunning = false
+                            registerNewAccount = false
                         }
                     }else {
                         operator.loginOperation(

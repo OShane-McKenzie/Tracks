@@ -17,6 +17,7 @@ object Databases {
         const val CONNECTION_REQUESTS = "connectionRequests"
         const val CONNECTION_REQUEST_OUTCOME = "connectionRequestOutcome"
         const val RESTRICTIONS = "restrictions"
+        const val ACCOUNT_DELETION_REQUESTS = "accountDeletionRequests"
     }
 
     object Documents{
@@ -36,6 +37,7 @@ object Databases {
     object Buckets{
         const val USER_PROFILE_IMAGES = "userProfileImages"
         const val USER_UPLOADS = "userUploads"
+        const val AUDIO = "audio"
     }
 
     object Local {

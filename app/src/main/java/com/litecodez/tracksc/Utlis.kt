@@ -322,7 +322,6 @@ fun String.isValidEmail(): Boolean {
 inline fun Unit.then(block: Unit.() -> Unit) {
     val result = this
     result.block()
-    let {  }
 }
 
 inline fun <T> T?.ifNotNull(block: (T) -> Unit):T? {

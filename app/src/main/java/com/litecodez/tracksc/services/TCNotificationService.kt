@@ -103,7 +103,7 @@ class TCNotificationService : LifecycleService() {
     }
 
     private suspend fun monitorNotifications(userId: String) {
-        notificationWatcher.watch(Databases.Collections.NOTIFICATIONS, userId) { notificationList ->
+        notificationWatcher.watch(Databases.Collections.NOTIFICATIONS, userId, key = "notificationService") { notificationList ->
             val notifications = (notificationList["notifications"] as? List<Map<String, Any>>)?.map { it.toNotificationModel() } ?: return@watch
             contentProvider.listOfNotifications.value = notifications
             processNotifications(notifications)

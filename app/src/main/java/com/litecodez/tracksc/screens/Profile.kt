@@ -16,6 +16,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,9 +44,11 @@ import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserEmail
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.home
+import com.litecodez.tracksc.ifNull
 import com.litecodez.tracksc.models.UserModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
+import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.objects.Operator
 import network.chaintech.cmpimagepickncrop.CMPImagePickNCropDialog
 import network.chaintech.cmpimagepickncrop.imagecropper.rememberImageCropper
@@ -62,6 +65,9 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
     var showCircularProgress by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
+    LaunchedEffect(true) {
+        Initializer.initTags(context){}
+    }
     CMPImagePickNCropDialog(
         imageCropper = imageCropper,
         openImagePicker = openImagePicker,
@@ -165,7 +171,7 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
         }
         Button(
             onClick = {
-                showCircularProgress = true
+
                 val userId = getUserUid()
                 if(!updating) {
                     if (
@@ -174,6 +180,7 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
                         lastName.isNotEmpty() &&
                         userId != null
                     ) {
+                        showCircularProgress = true
                         val userModel = UserModel(
                             firstName = firstName,
                             lastName = lastName,
@@ -203,6 +210,9 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
                     } else {
                         snackBarInfo = "Please fill all the fields"
                         showSnackBar = true
+                        selectedImage.ifNull {
+                            getToast(context = context, "Please choose an image")
+                        }
                     }
                 }else{
                     if (

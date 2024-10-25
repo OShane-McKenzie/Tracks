@@ -154,7 +154,7 @@ class ContentRepository {
     }
     fun uploadAudio(audioFile: File, onFailure: (Exception) -> Unit = {}, onSuccess: (Uri) -> Unit = {}) {
 
-        val audioRef= storageRef.child("audio/${audioFile.name}")
+        val audioRef= storageRef.child("${Databases.Buckets.AUDIO}/${audioFile.name}")
 
         val uploadTask = audioRef.putFile(Uri.fromFile(audioFile))
 
@@ -172,8 +172,10 @@ class ContentRepository {
     }
     fun downloadAudio(fileName: String, localDir: File, onFailure: (Exception) -> Unit = {}, onSuccess: (File) -> Unit = {}) {
 
-        val audioRef = storageRef.child("audio/$fileName")
-
+        val audioRef = storageRef.child("${Databases.Buckets.AUDIO}/$fileName")
+        if (!localDir.exists()){
+            localDir.mkdirs()
+        }
         // Create a local file where the audio will be saved
         val localFile = File(localDir, fileName)
 

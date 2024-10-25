@@ -12,16 +12,16 @@ class Watchers {
     private val db = FirebaseCenter.getDatabase()
     val activeListeners = mutableMapOf<String, ListenerRegistration>()
 
-    fun watch(collection: String, target: String, callBack: (Map<String, Any>) -> Unit) {
+    fun watch(collection: String, target: String, key:String="",callBack: (Map<String, Any>) -> Unit) {
         if (!activeListeners.containsKey(target)) {
             val listenerRegistration = db
                 .collection(collection)
                 .document(target)
                 .addSnapshotListener { value, error ->
                     when {
-                        error != null -> Log.d("Watcher", "Error getting document: $error")
+                        error != null -> Log.d("Watcher", "Error getting document: $error, $key")
                         value != null && value.exists() -> value.data?.let { callBack(it) }
-                        else -> Log.d("Watcher", "Watcher for $target does not exist.")
+                        else -> Log.d("Watcher", "Watcher for $target does not exist. $key")
                     }
                 }
             activeListeners[target] = listenerRegistration

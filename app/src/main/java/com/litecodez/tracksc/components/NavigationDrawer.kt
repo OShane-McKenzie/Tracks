@@ -93,22 +93,17 @@ fun NavigationDrawer(modifier: Modifier = Modifier, showDrawer:Boolean, operator
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
-                        Text(
-                            text = "Wallpaper",
-                            fontSize = TCDataTypes.Fibonacci.TWENTY_ONE.sp,
-                            color = contentProvider.textThemeColor.value,
-                            modifier = Modifier
-                                .border(
-                                    width = 2.dp,
-                                    color = contentProvider.textThemeColor.value,
-                                    shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT)
-                                )
-                                .padding(8.dp)
-                                .clickable {
+                        Button(
+                            onClick = {
                                 Controller.showWallpaperSelector.value = true
                                 onDismiss(false)
-                            }
-                        )
+                            },
+                            colors = ButtonDefaults.buttonColors().copy(
+                                containerColor = contentProvider.textThemeColor.value,
+                                contentColor = contentProvider.majorThemeColor.value)
+                        ){
+                            Text("Wallpaper")
+                        }
                         Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHT.dp))
                         OutlinedTextField(
                             value = videoListSearchText,

@@ -306,7 +306,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
 
                     } else {
                         // Account deletion failed
-                        Log.e(ContentValues.TAG, "Error deleting user account", task.exception)
+                        Log.e("Error deleting user account", "Error deleting user account", task.exception)
                         getToast(context = thisContext, msg = "Error deleting user account ${task.exception}",long = true)
                         onComplete(false)
                     }

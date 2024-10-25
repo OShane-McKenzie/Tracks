@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.IntOffset
 import com.litecodez.tracksc.components.BackgroundDetector
+import com.litecodez.tracksc.components.NoConnectionInfo
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.YouTubePlayerTc
 import com.litecodez.tracksc.models.YouTubePlayerViewModel
@@ -30,10 +32,16 @@ import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Dependencies
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.screens.ChatContainer
+import com.litecodez.tracksc.screens.Delete
 import com.litecodez.tracksc.screens.HomeScreen
+import com.litecodez.tracksc.screens.Loading
 import com.litecodez.tracksc.screens.LoginScreen
 import com.litecodez.tracksc.screens.ProfileScreen
 import com.litecodez.tracksc.screens.SplashScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 
@@ -45,6 +53,7 @@ fun Root(dependencies: Dependencies){
     val activity = context as Activity
     var moveX by remember { mutableFloatStateOf(0f) }
     var moveY by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
 
     appNavigator.GetBackHandler(
         context = context,
@@ -69,6 +78,21 @@ fun Root(dependencies: Dependencies){
     ) {
         contentProvider.currentChat.value.ifNotNull {
             Controller.isPlayListEnabled.value = contentProvider.playlistAutoplayEnabledDisabledRegister.value.contains(it.id)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            withContext(Dispatchers.IO){
+                while (true){
+                    networkManager.isInternetConnected(context).let{
+                        withContext(Dispatchers.Main){
+                            Controller.isInternetConnected.value = it
+                        }
+                    }
+                    delay(2000)
+                }
+            }
         }
     }
 
@@ -113,6 +137,21 @@ fun Root(dependencies: Dependencies){
                     ChatContainer(modifier = Modifier.fillMaxSize(), audioRecorder = dependencies.audioRecorder,operator = dependencies.operator)
                 }
             }
+            loading->{
+                SimpleAnimator(
+                    style = AnimationStyle.LEFT
+                ) {
+                    Loading()
+                }
+            }
+
+            delete->{
+                SimpleAnimator(
+                    style = AnimationStyle.LEFT
+                ) {
+                    Delete()
+                }
+            }
         }
         if(Controller.isHomeLoaded.value) {
             YouTubePlayerTc(modifier = Modifier
@@ -127,6 +166,14 @@ fun Root(dependencies: Dependencies){
                     detectTapGestures { }
                 }, viewModel = dependencies.tcYouTubePlayerViewModel, dependencies.operator
             )
+        }
+        if(!Controller.isInternetConnected.value){
+            SimpleAnimator(
+                style = AnimationStyle.UP,
+                modifier = Modifier.align(Alignment.TopCenter)
+            ) {
+                NoConnectionInfo(modifier = Modifier.align(Alignment.TopCenter))
+            }
         }
     }
 }

@@ -76,8 +76,16 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
         if(Controller.isDelayedProfileDocument.value){
             Initializer.initUserProfile(context){}
         }
-        val userTag = contentProvider.tags.value.find { it.id == contentProvider.userProfile.value.tag }
-        if(userTag == null){
+
+        if(contentProvider.userTag.value == null){
+            contentProvider.userTag.value = TagsModel(
+                id = contentProvider.userProfile.value.tag,
+                userId = contentProvider.userProfile.value.id,
+                name = "${ contentProvider.userProfile.value.firstName } ${ contentProvider.userProfile.value.lastName }",
+                type = TCDataTypes.TagType.PERSON,
+                photoUrl = contentProvider.userProfile.value.profileImage
+            )
+
             contentRepository.createDocument(
                 collectionPath = Databases.Collections.TAGS,
                 documentId = contentProvider.userProfile.value.tag,
@@ -161,7 +169,7 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
             ) {
-                val userTag = contentProvider.tags.value.find { it.userId == getUserUid() }
+                val userTag = contentProvider.userTag.value
 
                 userTag.ifNotNull {
                     TCImage(

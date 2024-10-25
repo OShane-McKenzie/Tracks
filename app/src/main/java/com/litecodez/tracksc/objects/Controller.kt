@@ -25,4 +25,6 @@ object Controller {
     val isInBackground = mutableStateOf(false)
     val isPlayListEnabled = mutableStateOf(false)
     val isUpdatingUserProfile = mutableStateOf(false)
+    val reloadChatListView = mutableStateOf(false)
+    val isInternetConnected = mutableStateOf(true)
 }

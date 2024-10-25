@@ -13,13 +13,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
 import com.litecodez.tracksc.components.CustomSnackBar
@@ -39,14 +43,17 @@ import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.Operator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManager){
     val infiniteTransition = rememberInfiniteTransition(label = "")
-    val isVisible by rememberSaveable { mutableStateOf(false) }
+    var isVisible by rememberSaveable { mutableStateOf(false) }
     var showSnackBar by remember { mutableStateOf(false) }
     var snackBarInfo by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
         targetValue = 1.2f,
@@ -55,6 +62,13 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
             repeatMode = RepeatMode.Reverse
         ), label = ""
     )
+    LaunchedEffect(true) {
+        scope.launch {
+            delay(500)
+            isVisible = true
+        }
+
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -81,6 +95,7 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
+                .padding(13.dp)
                 .align(Alignment.BottomCenter),
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.Center
@@ -89,12 +104,13 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
                 text = appName,
                 isVisible = isVisible,
                 style = LocalTextStyle.current.copy(
-                    color = Color.White,
-                    fontSize = LocalTextStyle.current.fontSize * 1.5f,
+                    color = Color.Blue,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     fontStyle = FontStyle.Italic
                 )
             )
+
         }
 
         LaunchedEffect(Unit){
@@ -105,6 +121,7 @@ fun SplashScreen(operator: Operator, authenticationManager: AuthenticationManage
                 }
                 operator.splashOperation()
             }
+
         }
 
         if(showSnackBar){

@@ -27,15 +27,13 @@ import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.ImageAnimation
 import com.litecodez.tracksc.components.setColorIfDarkTheme
 import com.litecodez.tracksc.models.AudioPlayer
-import com.litecodez.tracksc.models.YouTubePlayerViewModel
 import com.litecodez.tracksc.objects.AppNavigator
-import com.litecodez.tracksc.objects.AuthenticationManager
 import com.litecodez.tracksc.objects.ContentProvider
 import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.CustomExceptionHandler
 import com.litecodez.tracksc.objects.Dependencies
-import com.litecodez.tracksc.objects.Operator
+import com.litecodez.tracksc.objects.NetworkManager
 import com.litecodez.tracksc.objects.Watchers
 import com.litecodez.tracksc.ui.theme.TracksTheme
 
@@ -47,15 +45,13 @@ val notificationWatcher = Watchers()
 val tagsWatcher = Watchers()
 val tcConnectionWatcher = Watchers()
 val audioPlayer = AudioPlayer()
+val networkManager = NetworkManager()
 
 class MainActivity : ComponentActivity() {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val tcYouTubePlayerViewModel = YouTubePlayerViewModel(this.application)
-//        val authenticationManager = AuthenticationManager(this, context = applicationContext)
-//        val operator = Operator(context = applicationContext, authenticationManager = authenticationManager)
 
         val dependencies = Dependencies(applicationContext, this.application, this)
         // Initialize the launcher for the POST_NOTIFICATIONS permission
@@ -69,16 +65,13 @@ class MainActivity : ComponentActivity() {
         // Check and request notification permission
         requestPermission()
 
-        // Enable edge-to-edge layout
-        // enableEdgeToEdge()
-        // Check and request the user to disable battery optimizations
         try {
             // Load preferences for theme colors and wallpaper
-            val minor = loadPreferences(applicationContext, "minorColor", "0xFFAC9D9D")
+            val minor = loadPreferences(applicationContext, "minorColor", "0xFFFFE0B2")
                 .trim()
                 .replace("0x", "")
                 .toLong(16)
-            val major = loadPreferences(applicationContext, "majorColor", "0xFFB17E01")
+            val major = loadPreferences(applicationContext, "majorColor", "0xFFFB8C00")
                 .trim()
                 .replace("0x", "")
                 .toLong(16)
@@ -86,7 +79,7 @@ class MainActivity : ComponentActivity() {
                 .trim()
                 .replace("0x", "")
                 .toLong(16)
-            val wallpaper = loadPreferences(applicationContext, "wallpaper", "six")
+            val wallpaper = loadPreferences(applicationContext, "wallpaper", "two")
 
             // Set theme colors and wallpaper in content provider
             contentProvider.majorThemeColor.value = Color(major)

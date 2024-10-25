@@ -40,7 +40,7 @@ class ConversationService : LifecycleService() {
     }
 
     private suspend fun monitorConversation(chatId: String) {
-        conversationWatcher.watch(Databases.Collections.CONVERSATIONS, chatId) { data ->
+        conversationWatcher.watch(Databases.Collections.CONVERSATIONS, chatId, key = "conversationService") { data ->
             if (conversationWatcher.activeListeners.containsKey(chatId)) {
                 updateCurrentChat(data)
             } else {
@@ -57,7 +57,9 @@ class ConversationService : LifecycleService() {
             target = userId
         ) {
             if(!establishedConnectionWatchFirstLaunch) {
-                Initializer.initConversations()
+                Initializer.initConversations(){
+                    Controller.reloadChatListView.value = !Controller.reloadChatListView.value
+                }
             }else{
                 establishedConnectionWatchFirstLaunch = false
             }
