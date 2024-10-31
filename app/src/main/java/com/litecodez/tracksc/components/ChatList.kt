@@ -61,6 +61,7 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
     var firstTimeLaunch by remember { mutableStateOf(true) }
 
     LaunchedEffect(Controller.reloadList.value, contentProvider.conversations.value) {
+
         conversations = contentProvider.conversations.value
     }
     LaunchedEffect(Controller.reloadChatListView.value) {
@@ -70,13 +71,28 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
             firstTimeLaunch = false
         }
     }
+    LaunchedEffect(true) {
+        contentProvider.listOfConnectionRequests.value = emptyList()
+    }
 
+//    LaunchedEffect(contentProvider.listOfConnectionRequests.value) {
+//        filteredRequests = contentProvider.listOfConnectionRequests.value.filter { req ->
+//            conversations.none {
+//                conv -> conv.owners.contains(req.userId)
+//            }
+//        }
+//    }
     LaunchedEffect(contentProvider.listOfConnectionRequests.value) {
-        filteredRequests = contentProvider.listOfConnectionRequests.value.filter { req ->
-            conversations.none {
-                conv -> conv.owners.contains(req.userId)
+
+        val mutableRequests = contentProvider.listOfConnectionRequests.value.toMutableList()
+
+        mutableRequests.removeAll { req ->
+            conversations.any {
+                    conv -> conv.owners.contains(req.userId)
             }
         }
+
+        filteredRequests = mutableRequests
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -111,6 +127,12 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
                                     requester = getUserUid()!!
                                 )
                                 operator.sendConversationManagementRequest(editModel){
+                                    val tagToDelete = contentProvider.listOfConnectionRequests.value.find { it.userId == conversation.owners.first() }
+                                    tagToDelete.ifNotNull {
+                                        val newList = contentProvider.listOfConnectionRequests.value.toMutableList()
+                                        newList.remove(it)
+                                        contentProvider.listOfConnectionRequests.value = newList.toList()
+                                    }
                                     Controller.reloadChatListView.value = !Controller.reloadChatListView.value
                                 }
                             }
@@ -140,18 +162,25 @@ fun ChatList(modifier: Modifier = Modifier, operator: Operator) {
             horizontalAlignment = Alignment.Start
         ) {
             filteredRequests.forEach { request ->
-                SimpleAnimator(style = AnimationStyle.UP) {
-                    Card(
-                        colors = CardDefaults.cardColors().copy(
-                            containerColor = Color.White,
-                            contentColor = Color.Blue
-                        ),
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 5.dp
-                        ),
-                        modifier = Modifier.wrapContentSize()
-                    ) {
-                        Text("Connecting to ${request.name}...", modifier = Modifier.padding(8.dp))
+                if(!conversations.any {
+                            conv -> conv.owners.contains(request.userId)
+                    }) {
+                    SimpleAnimator(style = AnimationStyle.UP) {
+                        Card(
+                            colors = CardDefaults.cardColors().copy(
+                                containerColor = Color.White,
+                                contentColor = Color.Blue
+                            ),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 5.dp
+                            ),
+                            modifier = Modifier.wrapContentSize()
+                        ) {
+                            Text(
+                                "Connecting to ${request.name}...",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
                     }
                 }
             }

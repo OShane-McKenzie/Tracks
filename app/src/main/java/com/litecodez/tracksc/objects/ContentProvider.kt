@@ -14,10 +14,12 @@ import com.litecodez.tracksc.models.NotificationModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
+import com.litecodez.tracksc.models.Values
 import com.litecodez.tracksc.models.Video
 import com.litecodez.tracksc.models.Videos
 
 class ContentProvider {
+
     val currentUser = mutableStateOf<FirebaseUser?>(null)
     val videos = mutableStateOf(Videos())
     val imageByteArray = mutableStateOf<ByteArray?>(null)
@@ -38,6 +40,8 @@ class ContentProvider {
     val listOfConnectionRequests = mutableStateOf(listOf<TagsModel>())
     val currentSong = mutableStateOf<Video?>(null)
     val playerState = mutableIntStateOf(-1)
+    val values = mutableStateOf<Values>(Values())
+
     val wallpaperMap = mapOf(
         "one" to R.drawable.tracks_bg_1,
         "two" to R.drawable.tracks_bg_2,
@@ -48,10 +52,14 @@ class ContentProvider {
         "seven" to R.drawable.tracks_bg_7,
         "eight" to R.drawable.tracks_bg_8
     )
+
     val wallpaper = mutableIntStateOf(R.drawable.tracks_bg_2)
     val chatIdFromNotification = mutableStateOf<String?>(null)
     val restrictedUsers = mutableStateOf<List<String>>(listOf())
     val playlistAutoplayEnabledDisabledRegister = mutableStateOf<List<String>>(listOf())
     val currentVoiceNote = mutableStateOf<String>("")
     val deleteAccountMessage = mutableStateOf<String>("Deleting Account...")
+    val termsOfService = mutableStateOf("")
+    val privacyPolicy = mutableStateOf("")
+    val help = mutableStateOf("")
 }

@@ -27,4 +27,5 @@ object Controller {
     val isUpdatingUserProfile = mutableStateOf(false)
     val reloadChatListView = mutableStateOf(false)
     val isInternetConnected = mutableStateOf(true)
+    val splashOperationNotRun = mutableStateOf(true)
 }

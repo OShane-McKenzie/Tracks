@@ -1,8 +1,11 @@
 package com.litecodez.tracksc.objects
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import com.google.firebase.firestore.FieldValue
+import com.google.gson.Gson
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
@@ -10,10 +13,12 @@ import com.litecodez.tracksc.getCurrentDate
 import com.litecodez.tracksc.getCurrentTime
 import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
+import com.litecodez.tracksc.help
 import com.litecodez.tracksc.home
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.ifNull
 import com.litecodez.tracksc.login
+import com.litecodez.tracksc.models.ApiModel
 import com.litecodez.tracksc.models.ConversationEditModel
 import com.litecodez.tracksc.models.MediaDeleteRequest
 import com.litecodez.tracksc.models.MessageModel
@@ -21,16 +26,21 @@ import com.litecodez.tracksc.models.OutcomeModel
 import com.litecodez.tracksc.models.TagsModel
 import com.litecodez.tracksc.models.TrackConnectionRequestModel
 import com.litecodez.tracksc.models.UserModel
+import com.litecodez.tracksc.models.Values
+import com.litecodez.tracksc.privacyPolicy
 import com.litecodez.tracksc.profile
 import com.litecodez.tracksc.savePreferences
+import com.litecodez.tracksc.termsOfService
 import com.litecodez.tracksc.toByteArray
 import com.litecodez.tracksc.toMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import kotlin.system.exitProcess
 
 class Operator(
@@ -39,20 +49,49 @@ class Operator(
 ) {
     val operationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     fun splashOperation(callback: (OutcomeModel) -> Unit={}){
-//        operationScope.launch {
-//            createFile(context, fileLocation = Databases.Local.IMAGES_DB, fileName = Databases.Local.IMAGE_DATA, content = "{\"images\":{}}")
-//            readImagesFile(context, fileLocation = Databases.Local.IMAGES_DB, fileName = Databases.Local.IMAGE_DATA){
-//                CoroutineScope(Dispatchers.Main).launch{
-//                    contentProvider.localImages.value = it
-//                }
-//
-//                contentProvider.localImages.value.images.forEach {
-//                    contentProvider.loadedImageBytes[it.key] = it.value.data.toByteArray()
-//                }
-//            }
-//        }
+        operationScope.launch {
+            contentRepository.fetchApiData(
+                ApiModel(endPoint = privacyPolicy)
+            ){
+                contentProvider.privacyPolicy.value = it
+            }
+
+            contentRepository.fetchApiData(
+                ApiModel(endPoint = termsOfService)
+            ){
+                contentProvider.termsOfService.value = it
+            }
+
+            contentRepository.fetchApiData(
+                ApiModel(endPoint = help)
+            ){
+                contentProvider.help.value = it
+            }
+
+            contentRepository.fetchApiData(
+                ApiModel(endPoint = "/app_detail.json")
+            ){
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        val json = Json {
+                            ignoreUnknownKeys = true
+                            coerceInputValues = true
+                        }
+                        contentProvider.values.value = json.decodeFromString<Values>(it)
+                    }catch (e:Exception){
+                        e.printStackTrace()
+                    }finally {
+                        this.cancel()
+                    }
+                }
+            }
+        }
+
         Controller.firstLaunch.value = true
+        Controller.reloadRestrictions.value = false
         val isLoggedIn = authenticationManager.isUserLoggedIn()
+
         if(isLoggedIn){
             if(authenticationManager.isEmailVerified()){
                 authenticationManager.isFirstLogin {firstTimeLogin->
@@ -62,7 +101,6 @@ class Operator(
                                 profile,
                                 execTask = false, updateHistory = false
                             )
-
                         }else{
                             appNavigator.setViewState(
                                 home,
@@ -109,7 +147,6 @@ class Operator(
                                                     profile,
                                                     execTask = false, updateHistory = false
                                                 )
-
                                             }else{
                                                 appNavigator.setViewState(
                                                     home,
@@ -123,8 +160,7 @@ class Operator(
                                     callback(
                                         OutcomeModel(
                                         isError = true,
-                                        msg = "Email not verified"
-                                    )
+                                        msg = "Email not verified")
                                     )
                                 }
                             }else{
@@ -169,8 +205,7 @@ class Operator(
                                 callback(
                                     OutcomeModel(
                                     isError = false,
-                                    msg = "Email verification sent. Please check your inbox for the verification link."
-                                )
+                                    msg = "Email verification sent. Please check your inbox for the verification link.")
                                 )
                                 authenticationManager.logout()
                             }
@@ -180,8 +215,7 @@ class Operator(
                     callback(
                         OutcomeModel(
                         isError = true,
-                        msg = "Could not create account. Check your email and password. Password must be at least 8 characters"
-                    )
+                        msg = "Could not create account. Check your email and password. Password must be at least 8 characters")
                     )
                 }
             }
@@ -276,9 +310,9 @@ class Operator(
             if(firstErrorModel.isError){
                 callback(firstErrorModel)
             }else{
-                savePreferences("minorColor","0xFFBBDEFB",context)
-                savePreferences("majorColor","0xFF3949AB",context)
-                savePreferences("textThemeColor","0xFFFFFFFF",context)
+                savePreferences("minorColor","0xFFFFE0B2",context)
+                savePreferences("majorColor","0xFFFB8C00",context)
+                savePreferences("textThemeColor","0xFF000000",context)
                 contentProvider.userProfile.value = userModel
                 contentRepository.uploadImage(
                     bucket = Databases.Buckets.USER_PROFILE_IMAGES,
@@ -342,8 +376,6 @@ class Operator(
     }
 
     fun sendConversationManagementRequest(editModel: ConversationEditModel,callback: (OutcomeModel) -> Unit = {}){
-
-
         contentRepository.createDocument(
             collectionPath = Databases.Collections.CHAT_MANAGEMENT,
             documentId = editModel.conversationId,
@@ -360,8 +392,8 @@ class Operator(
                 }
             }
         }
-
     }
+
     fun sendMediaDeletionRequest(
         mediaDeleteRequest: MediaDeleteRequest,
         callback: (OutcomeModel) -> Unit = {}){
@@ -442,7 +474,6 @@ class Operator(
                 documentId = getCurrentDate() + "~" + getCurrentTime(),
                 data = mapOf("userId" to uid)
             ){
-
                 val userTag = contentProvider.tags.value.find { it.userId == getUserUid() }
                 userTag.ifNotNull {
                     contentRepository.deleteDocument(
@@ -460,10 +491,8 @@ class Operator(
                             }
                         }
                     }
-                    //authenticationManager.signOut()
                 }
                     .ifNull {
-                        //authenticationManager.signOut()
                         operationScope.launch {
                             withContext(Dispatchers.Main){
                                 contentProvider.deleteAccountMessage.value = "Exiting..."
@@ -480,7 +509,6 @@ class Operator(
             .ifNull {
                 getToast(context, "Error sending account deletion request")
             }
-
     }
 }
 

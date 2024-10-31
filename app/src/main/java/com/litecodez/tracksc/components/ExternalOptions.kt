@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,11 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.appNavigator
@@ -40,14 +39,14 @@ import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.delete
 import com.litecodez.tracksc.ifNotEmpty
 import com.litecodez.tracksc.ifNotNull
-import com.litecodez.tracksc.login
+import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.RestrictionType
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.profile
 import com.litecodez.tracksc.splash
-import kotlinx.coroutines.withContext
+import kotlin.system.exitProcess
 
 @Composable
 fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
@@ -56,6 +55,7 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
     }
     val scrollState = rememberScrollState()
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showInfo by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -101,7 +101,8 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                     colors = ButtonDefaults.buttonColors().copy(
                         contentColor = Color.Red,
                         containerColor = Color.White
-                    )
+                    ),
+                    enabled = !showInfo
                 ) {
                     Text(text = "Delete Profile")
                 }
@@ -130,7 +131,7 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
 
             Button(
                 onClick = {
-
+                    showInfo = true
                 },
                 colors = ButtonDefaults.buttonColors().copy(
                     contentColor = contentProvider.majorThemeColor.value,
@@ -138,6 +139,22 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                 )
             ) {
                 Text(text = "Get Help")
+            }
+
+            Button(
+                onClick = {
+                    Controller.splashOperationNotRun.value = true
+                    appNavigator.setViewState(splash, updateHistory = false, execTask = true){
+                        exitProcess(0)
+                    }
+
+                },
+                colors = ButtonDefaults.buttonColors().copy(
+                    contentColor = contentProvider.majorThemeColor.value,
+                    containerColor = contentProvider.textThemeColor.value
+                )
+            ) {
+                Text(text = "Exit App")
             }
         }
         Column(
@@ -179,6 +196,22 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                     }
                 }
             )
+        }
+        if(showInfo){
+            SimpleAnimator(
+                style = AnimationStyle.SCALE_IN_CENTER,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ){
+                Info(
+                    info = contentProvider.help.value,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxHeight(0.9f)
+                        .fillMaxWidth(0.9f)
+                ) {
+                    showInfo = it
+                }
+            }
         }
 
     }

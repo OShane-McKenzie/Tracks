@@ -119,6 +119,7 @@ object Initializer {
                 if(processCounter <2){
                     continue
                 }else{
+                    processCounter = 0
                     callBack()
                     println("isFullyInitialized8: ${isFullyInitialized.value}")
                     break

@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +48,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -64,8 +66,10 @@ import com.litecodez.tracksc.R
 import com.litecodez.tracksc.appName
 import com.litecodez.tracksc.components.CustomSnackBar
 import com.litecodez.tracksc.components.ImageAnimation
+import com.litecodez.tracksc.components.Info
 import com.litecodez.tracksc.components.SimpleAnimator
 import com.litecodez.tracksc.components.setColorIfDarkTheme
+import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.isValidEmail
 import com.litecodez.tracksc.objects.AnimationStyle
@@ -150,6 +154,14 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
     var processRunning by rememberSaveable {
         mutableStateOf(false)
     }
+    var showInfo by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var info by rememberSaveable {
+        mutableStateOf("")
+    }
+
     LaunchedEffect(Controller.emailVerificationResendable.value){
         if(Controller.emailVerificationResendable.value){
             if(Controller.firstLaunch.value){
@@ -447,12 +459,38 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                             withContext(Dispatchers.Main){scaleButton = false}
                         }
 
-
                     },
                     text = if(registerNewAccount) "Already have an account? Login" else "Don't have an account? Register",
                     color = Color.White
                 )
             }
+
+            Spacer(modifier = Modifier.height(13.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(0.75f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = {
+                        info = contentProvider.privacyPolicy.value
+                        showInfo = true
+                    },
+                    enabled = contentProvider.privacyPolicy.value.isNotEmpty()
+                ) {
+                    Text("Privacy Policy")
+                }
+                TextButton(
+                    onClick = {
+                        info = contentProvider.termsOfService.value
+                        showInfo = true
+                    },
+                    enabled = contentProvider.termsOfService.value.isNotEmpty()
+                ) {
+                    Text("Terms of Service")
+                }
+            }
+
             if(showResendEmailVerification){
                 Spacer(modifier = Modifier.height(13.dp))
                 Row(
@@ -547,6 +585,22 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 }
             )
         }
+        if(showInfo){
+            SimpleAnimator(
+                style = AnimationStyle.SCALE_IN_CENTER,
+                modifier = Modifier.align(Alignment.Center)
+            ){
+                Info(
+                    info = info,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxHeight(0.9f)
+                        .fillMaxWidth(0.9f)
+                ) {
+                    showInfo = it
+                }
+            }
+        }
         if(showSnackBar){
             CustomSnackBar(
                 info = snackBarInfo,
@@ -570,6 +624,5 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 }
             }
         }
-
     }
 }

@@ -73,6 +73,7 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
         mutableStateOf(false)
     }
     LaunchedEffect(Unit){
+        Controller.splashOperationNotRun.value = false
         if(Controller.isDelayedProfileDocument.value){
             Initializer.initUserProfile(context){}
         }

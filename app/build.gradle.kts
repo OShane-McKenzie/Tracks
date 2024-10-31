@@ -97,26 +97,23 @@ dependencies {
     implementation(libs.jackson.core)
     implementation(libs.jackson.module.kotlin)
     implementation (libs.gson)
-    //implementation (libs.core)
-    //implementation (libs.youtube.jextractor)
 
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
 
-    implementation (libs.androidx.junit.v115)
-    androidTestImplementation (libs.androidx.espresso.core.v350)
-    //implementation ("com.squareup.okhttp3:logging-interceptor:3.12.2")
-    //implementation ("com.squareup.retrofit2:retrofit:2.7.2")
-    //implementation ("com.squareup.retrofit2:converter-gson:2.7.2")
-    //implementation ("com.github.tony19:named-regexp:0.2.5")
-    //implementation (libs.kotlin.youtubeextractor)
-    //implementation ("com.github.evgenyneu:js-evaluator-for-android:v6.0.0")
+
+    //debugImplementation ("com.squareup.leakcanary:leakcanary-android:2.14")
 
     implementation ("com.gu.android:toolargetool:0.3.0")
 
-    configurations.all {
-        resolutionStrategy.force ("androidx.test.ext:junit:1.1.5")
-        resolutionStrategy.force ("androidx.test.espresso:espresso-core:3.5.0")
-    }
+//    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14") {
+//        exclude(group = "junit", module = "junit")
+//        exclude(group = "org.junit.jupiter", module = "junit-jupiter-api")
+//    }
+//    configurations.all {
+//
+//        resolutionStrategy.force ("androidx.test.ext:junit:1.1.5")
+//        resolutionStrategy.force ("androidx.test.espresso:espresso-core:3.5.0")
+//    }
 }

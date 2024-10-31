@@ -50,6 +50,7 @@ import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Initializer
 import com.litecodez.tracksc.objects.Operator
+import com.litecodez.tracksc.splash
 import network.chaintech.cmpimagepickncrop.CMPImagePickNCropDialog
 import network.chaintech.cmpimagepickncrop.imagecropper.rememberImageCropper
 
@@ -64,7 +65,9 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
     var snackBarInfo by rememberSaveable { mutableStateOf("") }
     var showCircularProgress by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
-
+    var firstSetup by rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(true) {
         Initializer.initTags(context){}
     }
@@ -204,7 +207,7 @@ fun ProfileScreen(operator: Operator, updating:Boolean = false){
                                 snackBarInfo = it.msg
                                 showSnackBar = true
                             } else {
-                                appNavigator.setViewState(home, updateHistory = false)
+                                appNavigator.setViewState(splash, updateHistory = false)
                             }
                         }
                     } else {

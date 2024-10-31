@@ -10,18 +10,12 @@ import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotEmpty
 import com.litecodez.tracksc.loading
-import com.litecodez.tracksc.models.ChatModel
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.objects.Initializer
+import com.litecodez.tracksc.splash
 import com.litecodez.tracksc.tcConnectionWatcher
-import com.litecodez.tracksc.toMessageModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class TCConnectionService : LifecycleService() {
 
@@ -74,9 +68,13 @@ class TCConnectionService : LifecycleService() {
         handleRefusedRequests(refusedRequests)
 
         approvedRequests.ifNotEmpty {
-            getToast(applicationContext, "Connected with ${it.firstOrNull()?.keys?.firstOrNull()}")
+            //getToast(applicationContext, "Connected with ${it.firstOrNull()?.keys?.firstOrNull()}")
             Initializer.initConversations {
-                appNavigator.setViewState(loading)
+                if(Controller.splashOperationNotRun.value){
+                    appNavigator.setViewState(splash, updateHistory = false)
+                }else{
+                    appNavigator.setViewState(loading)
+                }
             }
         }
 
