@@ -49,56 +49,57 @@ fun CustomSnackBar(
 
     LaunchedEffect(show){
         if(!show) return@LaunchedEffect
-        delay(duration)
-        task()
+        delay((duration*0.95).toLong())
         show = false
+        delay((duration-(duration*0.95).toLong()))
+        task()
     }
-    if(show){
+
+    SimpleAnimator(
+        isVisible = show,
+        style = AnimationStyle.DOWN
+    ){
         Box(
             modifier = modifier.fillMaxSize().padding(8.dp)
         ){
-            SimpleAnimator(
-                modifier = Modifier.align(Alignment.BottomCenter),
-                style = AnimationStyle.SCALE_IN_CENTER
-            ) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxHeight(0.08f)
-                        .fillMaxWidth(0.98f)
-                        .background(color =  containerColor, shape = RoundedCornerShape(13))
-                        .padding(3.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxHeight(0.08f)
+                    .fillMaxWidth(0.98f)
+                    .background(color =  containerColor, shape = RoundedCornerShape(13))
+                    .padding(3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
 
-                ){
-                    Box(modifier = Modifier.fillMaxWidth()){
-                        Text(
-                            info,
-                            color = textColor,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .basicMarquee()
-                        )
-                        Icon(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .background(
-                                    color = textColor.copy(alpha = 0.7f),
-                                    shape = CircleShape)
-                                .padding(0.dp)
-                                .size(21.dp)
-                                .clickable {
-                                    show = false
-                                    task()
-                                },
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "close snack bar",
-                            tint = Color.Black
-                        )
-                    }
+            ){
+                Box(modifier = Modifier.fillMaxWidth()){
+                    Text(
+                        info,
+                        color = textColor,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .basicMarquee()
+                    )
+                    Icon(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .background(
+                                color = textColor.copy(alpha = 0.7f),
+                                shape = CircleShape)
+                            .padding(0.dp)
+                            .size(21.dp)
+                            .clickable {
+                                show = false
+                                task()
+                            },
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "close snack bar",
+                        tint = Color.Black
+                    )
                 }
             }
         }
     }
+
 }

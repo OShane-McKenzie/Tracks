@@ -197,20 +197,19 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                 }
             )
         }
-        if(showInfo){
-            SimpleAnimator(
-                style = AnimationStyle.SCALE_IN_CENTER,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            ){
-                Info(
-                    info = contentProvider.help.value,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxHeight(0.9f)
-                        .fillMaxWidth(0.9f)
-                ) {
-                    showInfo = it
-                }
+        SimpleAnimator(
+            isVisible = showInfo,
+            style = AnimationStyle.SCALE_IN_CENTER,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ){
+            Info(
+                info = contentProvider.help.value,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxHeight(0.9f)
+                    .fillMaxWidth(0.9f)
+            ) {
+                showInfo = it
             }
         }
 

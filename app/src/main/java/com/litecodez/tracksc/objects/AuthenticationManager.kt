@@ -79,7 +79,8 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
         } catch (e: ApiException) {
             Controller.googleSignInProcessComplete.value = true
             Log.w(ContentValues.TAG, "Google sign in failure", task.exception)
-            getToast(thisContext,"Error: Google sign in failure. ${task.exception}", long = true)
+            //getToast(thisContext,"Error: Google sign in failure.", long = true)
+            Controller.isGoogleSignInFailure.value = true
         }
     }
 
@@ -307,7 +308,7 @@ class AuthenticationManager(private val activity: ComponentActivity, context: Co
                     } else {
                         // Account deletion failed
                         Log.e("Error deleting user account", "Error deleting user account", task.exception)
-                        getToast(context = thisContext, msg = "Error deleting user account ${task.exception}",long = true)
+                        getToast(context = thisContext, msg = "Error deleting user account",long = true)
                         onComplete(false)
                     }
                 }

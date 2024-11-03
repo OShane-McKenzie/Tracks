@@ -28,4 +28,5 @@ object Controller {
     val reloadChatListView = mutableStateOf(false)
     val isInternetConnected = mutableStateOf(true)
     val splashOperationNotRun = mutableStateOf(true)
+    val isGoogleSignInFailure = mutableStateOf(false)
 }

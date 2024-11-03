@@ -1,5 +1,6 @@
 package com.litecodez.tracksc.components
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -13,6 +14,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -42,7 +44,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun SimpleAnimator(
     style: AnimationStyle = AnimationStyle.RIGHT,
-    modifier: Modifier = Modifier,
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
+    isVisible: Boolean = true,
     task: (Int) -> Unit = {},
     animationCounter: Int = 0,
     content: @Composable () -> Unit
@@ -51,8 +54,8 @@ fun SimpleAnimator(
     @Composable
     fun Right() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
@@ -61,9 +64,10 @@ fun SimpleAnimator(
                 initialOffsetX = { fullWidth -> fullWidth },
                 animationSpec = tween(durationMillis = 200)
             ) + fadeIn(animationSpec = tween(durationMillis = 200)),
-            exit = slideOutHorizontally(animationSpec = spring(stiffness = Spring.StiffnessHigh)) {
-                200
-            } + fadeOut()
+            exit = slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -72,8 +76,8 @@ fun SimpleAnimator(
     @Composable
     fun Left() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
@@ -82,9 +86,10 @@ fun SimpleAnimator(
                 initialOffsetX = { fullWidth -> -fullWidth },
                 animationSpec = tween(durationMillis = 200)
             ) + fadeIn(animationSpec = tween(durationMillis = 200)),
-            exit = slideOutHorizontally(animationSpec = spring(stiffness = Spring.StiffnessHigh)) {
-                -200
-            } + fadeOut()
+            exit = slideOutHorizontally(
+                targetOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -93,15 +98,22 @@ fun SimpleAnimator(
     @Composable
     fun ScaleInTop() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
-
         AnimatedVisibility(
             modifier = modifier,
             visible = visible,
-            enter = scaleIn(),
-            exit = scaleOut()
+            enter = scaleIn(
+                initialScale = 0f,
+                transformOrigin = TransformOrigin(0.5f, 0f),
+                animationSpec = tween(durationMillis = 200)
+            ),
+            exit = scaleOut(
+                targetScale = 0f,
+                transformOrigin = TransformOrigin(0.5f, 0f),
+                animationSpec = tween(durationMillis = 200)
+            )
         ) {
             content()
         }
@@ -110,14 +122,22 @@ fun SimpleAnimator(
     @Composable
     fun ScaleInLeft() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
             visible = visible,
-            enter = scaleIn(transformOrigin = TransformOrigin(0f, 0f)) + fadeIn(),
-            exit = scaleOut(transformOrigin = TransformOrigin(0f, 0f)) + fadeOut()
+            enter = scaleIn(
+                initialScale = 0f,
+                transformOrigin = TransformOrigin(0f, 0f),
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeIn(animationSpec = tween(durationMillis = 200)),
+            exit = scaleOut(
+                targetScale = 0f,
+                transformOrigin = TransformOrigin(0f, 0f),
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -126,14 +146,23 @@ fun SimpleAnimator(
     @Composable
     fun Up() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
             visible = visible,
-            enter = slideInVertically(initialOffsetY = { 40 }) + fadeIn(initialAlpha = 0.3f),
-            exit = slideOutVertically() + fadeOut()
+            enter = slideInVertically(
+                initialOffsetY = { 40 },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeIn(
+                initialAlpha = 0.3f,
+                animationSpec = tween(durationMillis = 200)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { 40 },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -142,14 +171,23 @@ fun SimpleAnimator(
     @Composable
     fun Down() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
             visible = visible,
-            enter = slideInVertically(initialOffsetY = { -40 }) + fadeIn(initialAlpha = 0.3f),
-            exit = slideOutVertically() + fadeOut()
+            enter = slideInVertically(
+                initialOffsetY = { -40 },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeIn(
+                initialAlpha = 0.3f,
+                animationSpec = tween(durationMillis = 200)
+            ),
+            exit = slideOutVertically(
+                targetOffsetY = { -40 },
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -157,13 +195,15 @@ fun SimpleAnimator(
 
     @Composable
     fun Transition(color: Color = Color.White, speed: Int = 15) {
-        var setAlpha by remember {
-            mutableFloatStateOf(1.0f)
-        }
-        var isAlphaSet by remember {
-            mutableStateOf(false)
-        }
+        var visible by remember { mutableStateOf(false) }
+        var setAlpha by remember { mutableFloatStateOf(1.0f) }
+        var isAlphaSet by remember { mutableStateOf(false) }
         val colorList = remember { mutableStateListOf<Color>() }
+
+        LaunchedEffect(isVisible) {
+            visible = isVisible
+        }
+
         if (!isAlphaSet) {
             var counter = setAlpha
             while (counter > 0) {
@@ -173,28 +213,34 @@ fun SimpleAnimator(
             colorList.add(color.copy(alpha = 0.0f))
             isAlphaSet = true
         }
-        var transitionColor by remember {
-            mutableStateOf(color.copy(alpha = setAlpha))
-        }
 
-        LaunchedEffect(isAlphaSet) {
-            if (isAlphaSet) {
-                for (i in colorList) {
+        var transitionColor by remember { mutableStateOf(color.copy(alpha = setAlpha)) }
+
+        LaunchedEffect(visible) {
+            if (visible) {
+                // Entry animation
+                for (i in colorList.reversed()) {
                     transitionColor = i
                     delay(speed.toLong())
                 }
                 setAlpha = 0.0f
+            } else {
+                // Exit animation
+                for (i in colorList) {
+                    transitionColor = i
+                    delay(speed.toLong())
+                }
+                setAlpha = 1.0f
             }
         }
 
-        if (setAlpha <= 0f) {
-            content()
-        } else {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .background(transitionColor)
-            ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(transitionColor)
+        ) {
+            if (setAlpha <= 0f) {
+                content()
             }
         }
     }
@@ -202,14 +248,22 @@ fun SimpleAnimator(
     @Composable
     fun ScaleInCenter() {
         var visible by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit) {
-            visible = true
+        LaunchedEffect(isVisible) {
+            visible = isVisible
         }
         AnimatedVisibility(
             modifier = modifier,
             visible = visible,
-            enter = scaleIn(transformOrigin = TransformOrigin.Center) + fadeIn(),
-            exit = scaleOut(transformOrigin = TransformOrigin.Center) + fadeOut()
+            enter = scaleIn(
+                initialScale = 0f,
+                transformOrigin = TransformOrigin.Center,
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeIn(animationSpec = tween(durationMillis = 200)),
+            exit = scaleOut(
+                targetScale = 0f,
+                transformOrigin = TransformOrigin.Center,
+                animationSpec = tween(durationMillis = 200)
+            ) + fadeOut(animationSpec = tween(durationMillis = 200))
         ) {
             content()
         }
@@ -220,44 +274,37 @@ fun SimpleAnimator(
             Right()
             task(animationCounter)
         }
-
         AnimationStyle.LEFT -> {
             Left()
             task(animationCounter)
         }
-
         AnimationStyle.SCALE_IN_TOP -> {
             ScaleInTop()
             task(animationCounter)
         }
-
         AnimationStyle.SCALE_IN_LEFT -> {
             ScaleInLeft()
             task(animationCounter)
         }
-
         AnimationStyle.UP -> {
             Up()
             task(animationCounter)
         }
-
         AnimationStyle.DOWN -> {
             Down()
             task(animationCounter)
         }
-
         AnimationStyle.TRANSITION -> {
             Transition()
             task(animationCounter)
         }
-
         AnimationStyle.SCALE_IN_CENTER -> {
             ScaleInCenter()
             task(animationCounter)
         }
-
         AnimationStyle.NONE -> {
-
+            content()
+            task(animationCounter)
         }
     }
 }

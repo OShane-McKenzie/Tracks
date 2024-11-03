@@ -330,19 +330,27 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
                 CircularProgressIndicator()
             }
         }
-        NavigationDrawer(
-            showDrawer = showNavigationDrawer,
-            operator = operator,
+        SimpleAnimator(
+            style = AnimationStyle.LEFT,
+            isVisible = showNavigationDrawer,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .fillMaxHeight()
-                .fillMaxWidth(0.9f),
-            onMore = {
-                showMoreOptions = true
+        ) {
+            NavigationDrawer(
+                showDrawer = true,
+                operator = operator,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxHeight()
+                    .fillMaxWidth(0.9f),
+                onMore = {
+                    showMoreOptions = true
+                }
+            ){
+                showNavigationDrawer = it
             }
-        ){
-            showNavigationDrawer = it
         }
+
         Column(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -366,7 +374,10 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
             }
         }
 
-        if(Controller.showWallpaperSelector.value){
+        SimpleAnimator(
+            isVisible = Controller.showWallpaperSelector.value,
+            style = AnimationStyle.SCALE_IN_CENTER,
+        ){
             WallpaperSelector(
                 modifier = Modifier
                     .fillMaxSize()
@@ -384,21 +395,25 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
                 )
             }
         }
-        if(showMoreOptions){
-            SimpleAnimator(
-                style = AnimationStyle.SCALE_IN_CENTER
-            ) {
-                MoreOptions(modifier = Modifier.align(Alignment.TopCenter), operator = operator){
-                    showMoreOptions = it
-                }
-            }
 
+        SimpleAnimator(
+            isVisible = showMoreOptions,
+            style = AnimationStyle.SCALE_IN_CENTER
+        ) {
+            MoreOptions(modifier = Modifier.align(Alignment.TopCenter), operator = operator){
+                showMoreOptions = it
+            }
         }
-        if(isRecording){
+        SimpleAnimator(
+            style = AnimationStyle.SCALE_IN_CENTER,
+            modifier = Modifier.align(Alignment.Center),
+            isVisible = isRecording
+        ) {
             RecordingDisplay(
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .fillMaxHeight(0.5f).fillMaxWidth(0.9f),
+                    .fillMaxHeight(0.5f)
+                    .fillMaxWidth(0.9f),
                 audioRecorder = audioRecorder,
                 onCancel = {
                     isRecording = it
@@ -421,41 +436,39 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
                 }
             }
         }
-        if(showUploadGif){
-            SimpleAnimator(
-                style = AnimationStyle.SCALE_IN_CENTER,
-                modifier = Modifier.align(Alignment.CenterStart)
-            ) {
-                GifImage(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clip(CircleShape)
-                        .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-                        .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
-                )
-            }
+        SimpleAnimator(
+            isVisible = showUploadGif,
+            style = AnimationStyle.SCALE_IN_CENTER,
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
+            GifImage(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .clip(CircleShape)
+                    .height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+                    .width(TCDataTypes.Fibonacci.FIFTY_FIVE.dp)
+            )
         }
     }
-    if(enlargeMessage){
-       SimpleAnimator(
-           style = AnimationStyle.SCALE_IN_CENTER
-       ) {
-           EnhancedZoomableContent(
-               modifier = Modifier.fillMaxSize()
-           ) {
-               Box(
-                   modifier = Modifier.fillMaxSize()
-               ) {
-                   ImageInChat(img = imageData)
+    SimpleAnimator(
+        isVisible = enlargeMessage,
+        style = AnimationStyle.SCALE_IN_CENTER
+    ) {
+        EnhancedZoomableContent(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                ImageInChat(img = imageData)
 
-                   IconButton(onClick = { enlargeMessage = false }, modifier = Modifier.align(Alignment.TopEnd)) {
-                       Icon(
-                           imageVector = Icons.Default.Close,
-                           contentDescription = ""
-                       )
-                   }
-               }
-           }
+                IconButton(onClick = { enlargeMessage = false }, modifier = Modifier.align(Alignment.TopEnd)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = ""
+                    )
+                }
+            }
         }
     }
 

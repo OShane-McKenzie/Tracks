@@ -48,52 +48,48 @@ fun WallpaperSelector(modifier: Modifier = Modifier, onDismiss:() -> Unit = {},o
             R.drawable.tracks_bg_8
         )
     }
-    SimpleAnimator(
-        style = AnimationStyle.SCALE_IN_CENTER,
-    ){
-        Box {
-            Row(
-                modifier = modifier
-                    .background(
-                        color = Color.Black.copy(alpha = 0.7f)
-                    )
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ) {
+    Box {
+        Row(
+            modifier = modifier
+                .background(
+                    color = Color.Black.copy(alpha = 0.7f)
+                )
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) {
 
-                    }
-                    .padding(TCDataTypes.Fibonacci.EIGHT.dp)
-                    .horizontalScroll(scrollState),
-                horizontalArrangement = Arrangement.spacedBy(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                wallpaperList.forEach {
-                    Image(
-                        painter = painterResource(id = it),
-                        contentDescription = "wallpaper",
-                        modifier = Modifier
-                            .fillMaxSize(0.6f)
-                            .clip(RoundedCornerShape(TCDataTypes.Fibonacci.FIVE.dp))
-                            .clickable {
-                                onSelect(it)
-                            },
-                        contentScale = ContentScale.FillBounds
-                    )
                 }
+                .padding(TCDataTypes.Fibonacci.EIGHT.dp)
+                .horizontalScroll(scrollState),
+            horizontalArrangement = Arrangement.spacedBy(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            wallpaperList.forEach {
+                Image(
+                    painter = painterResource(id = it),
+                    contentDescription = "wallpaper",
+                    modifier = Modifier
+                        .fillMaxSize(0.6f)
+                        .clip(RoundedCornerShape(TCDataTypes.Fibonacci.FIVE.dp))
+                        .clickable {
+                            onSelect(it)
+                        },
+                    contentScale = ContentScale.FillBounds
+                )
             }
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
-                horizontalArrangement = Arrangement.End
-            ){
-                IconButton(onClick = { onDismiss.invoke() }) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-                }
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(TCDataTypes.Fibonacci.TWENTY_ONE.dp),
+            horizontalArrangement = Arrangement.End
+        ){
+            IconButton(onClick = { onDismiss.invoke() }) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = Color.White)
             }
         }
     }

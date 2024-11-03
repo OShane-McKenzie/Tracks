@@ -144,14 +144,13 @@ fun HomeScreen(operator: Operator, authenticationManager: AuthenticationManager)
         )
 
         //WaveEffect(modifier = Modifier.fillMaxWidth().height(13.dp).align(Alignment.Center))
-        if(showExternalOptions){
-            SimpleAnimator(
-                style = AnimationStyle.DOWN
-            ) {
-                ExternalOptions(modifier = Modifier
-                    .fillMaxSize()
-                    .align(Alignment.TopCenter), operator)
-            }
+        SimpleAnimator(
+            isVisible = showExternalOptions,
+            style = AnimationStyle.DOWN
+        ) {
+            ExternalOptions(modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.TopCenter), operator)
         }
         Box(modifier = Modifier
             .align(Alignment.TopCenter)

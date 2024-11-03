@@ -549,12 +549,11 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                         onValueChange = { input = it },
                         enabled = !showCircularProgress,
                     )
-                    if(showCircularProgress){
-                        SimpleAnimator(
-                            style = AnimationStyle.UP
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                    SimpleAnimator(
+                        isVisible = showCircularProgress,
+                        style = AnimationStyle.UP
+                    ) {
+                        CircularProgressIndicator()
                     }
                 },
                 confirmButton = {
@@ -585,20 +584,19 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                 }
             )
         }
-        if(showInfo){
-            SimpleAnimator(
-                style = AnimationStyle.SCALE_IN_CENTER,
-                modifier = Modifier.align(Alignment.Center)
-            ){
-                Info(
-                    info = info,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxHeight(0.9f)
-                        .fillMaxWidth(0.9f)
-                ) {
-                    showInfo = it
-                }
+        SimpleAnimator(
+            isVisible = showInfo,
+            style = AnimationStyle.SCALE_IN_CENTER,
+            modifier = Modifier.align(Alignment.Center)
+        ){
+            Info(
+                info = info,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxHeight(0.9f)
+                    .fillMaxWidth(0.9f)
+            ) {
+                showInfo = it
             }
         }
         if(showSnackBar){
@@ -620,8 +618,18 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                     verticalArrangement = Arrangement.Center
                 ){
                     CircularProgressIndicator()
-                    Text(text = "Please wait...")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Please wait...", color = Color.White)
                 }
+            }
+        }
+
+        LaunchedEffect(key1 = Controller.isGoogleSignInFailure.value) {
+            if (Controller.isGoogleSignInFailure.value) {
+                snackBarInfo = "Google sign in failed"
+                showSnackBar = true
+                Controller.isGoogleSignInFailure.value = false
+                processRunning = false
             }
         }
     }

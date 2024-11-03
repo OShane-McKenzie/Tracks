@@ -42,7 +42,6 @@ val contentProvider = ContentProvider()
 val contentRepository = ContentRepository()
 val conversationWatcher = Watchers()
 val notificationWatcher = Watchers()
-val tagsWatcher = Watchers()
 val tcConnectionWatcher = Watchers()
 val audioPlayer = AudioPlayer()
 val networkManager = NetworkManager()
@@ -124,7 +123,7 @@ class MainActivity : ComponentActivity() {
                             containerColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black),
                             textColor = setColorIfDarkTheme(lightColor = Color.White, darkColor = Color.Black, invert = false),
                             isVisible = true,
-                            duration = 100000
+                            duration = 8000
                         )
                     }
                 }

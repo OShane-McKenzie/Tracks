@@ -78,19 +78,27 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
             }
         )
 
-        if(text.trim().isNotEmpty() && text.trim().length > 1){
-            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp))
-            SimpleAnimator(
-                style = AnimationStyle.UP,
-                modifier = Modifier.wrapContentSize()
-            ){
-                Row(
-                    modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.dp)
+        Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.FIFTY_FIVE.dp))
+        SimpleAnimator(
+            isVisible = text.trim().isNotEmpty() && text.trim().length > 1,
+            style = AnimationStyle.UP,
+            modifier = Modifier.wrapContentSize()
+        ){
+            Row(
+                modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.dp)
+                    .background(
+                        color = Color.White.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
+                    )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
                         .background(
-                            color = Color.White.copy(alpha = 0.4f),
+                            color = Color.White.copy(alpha = 0.0f),
                             shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
                         )
                 ) {
@@ -98,57 +106,47 @@ fun TagsFilter(modifier: Modifier = Modifier, operator: Operator){
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                color = Color.White.copy(alpha = 0.0f),
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        contentProvider.minorThemeColor.value.copy(alpha = 0.8f),
+                                        contentProvider.majorThemeColor.value.copy(alpha = 0.8f)
+                                    ),
+                                    startY = TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.toFloat(),
+                                    endY = TCDataTypes.Fibonacci.TWENTY_ONE.toFloat()
+                                ),
                                 shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
                             )
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            contentProvider.minorThemeColor.value.copy(alpha = 0.8f),
-                                            contentProvider.majorThemeColor.value.copy(alpha = 0.8f)
-                                        ),
-                                        startY = TCDataTypes.Fibonacci.ONE_HUNDRED_AND_44.toFloat(),
-                                        endY = TCDataTypes.Fibonacci.TWENTY_ONE.toFloat()
-                                    ),
-                                    shape = RoundedCornerShape(TCDataTypes.Fibonacci.EIGHT.dp)
-                                )
-                                .blur(TCDataTypes.Fibonacci.THIRTEEN.dp)
-                        ) {}
+                            .blur(TCDataTypes.Fibonacci.THIRTEEN.dp)
+                    ) {}
 
-                        Column(
-                            modifier = Modifier.wrapContentSize().verticalScroll(scrollState),
-                        ) {
-                            filteredTags.forEach { tag ->
-                                Connect(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    tag
-                                ) { target ->
-                                    if (target.userId != getUserUid()) {
-                                        getUserUid().ifNotNull {
-                                            contentProvider.listOfConnectionRequests.value = contentProvider.listOfConnectionRequests.value.plus(target)
-                                            getToast(context, "Connecting to ${target.name}...", long = true)
-                                            operator.sendConnectionRequest(
-                                                TrackConnectionRequestModel(
-                                                    senderId = it,
-                                                    targetId = target.userId,
-                                                    targetType = target.type,
-                                                    targetName = target.name
-                                                )
+                    Column(
+                        modifier = Modifier.wrapContentSize().verticalScroll(scrollState),
+                    ) {
+                        filteredTags.forEach { tag ->
+                            Connect(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                tag
+                            ) { target ->
+                                if (target.userId != getUserUid()) {
+                                    getUserUid().ifNotNull {
+                                        contentProvider.listOfConnectionRequests.value = contentProvider.listOfConnectionRequests.value.plus(target)
+                                        operator.sendConnectionRequest(
+                                            TrackConnectionRequestModel(
+                                                senderId = it,
+                                                targetId = target.userId,
+                                                targetType = target.type,
+                                                targetName = target.name
                                             )
-                                        }
+                                        )
                                     }
-                                    text = ""
                                 }
-                                Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHT.dp))
+                                text = ""
                             }
+                            Spacer(modifier = Modifier.height(TCDataTypes.Fibonacci.EIGHT.dp))
                         }
-                       // VerticalScrollbar()
                     }
+                    // VerticalScrollbar()
                 }
             }
         }
