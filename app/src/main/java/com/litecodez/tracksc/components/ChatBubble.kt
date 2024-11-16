@@ -139,8 +139,6 @@ fun ChatBubble(modifier: Modifier = Modifier,
         }
 
         if(message.type == TCDataTypes.MessageType.AUDIO){
-
-
             if(audioFile.exists()){
                 audioReady = true
             }else{
