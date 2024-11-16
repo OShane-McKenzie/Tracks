@@ -127,6 +127,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
                 }
             }
         }
+
         if(!imageReady) {
             if (message.type == TCDataTypes.MessageType.IMAGE && !localImageFound) {
                 getImage()
