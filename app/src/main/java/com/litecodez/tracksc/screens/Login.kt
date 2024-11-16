@@ -571,7 +571,6 @@ fun LoginScreen(operator: Operator, authenticationManager: AuthenticationManager
                             snackBarInfo = "Invalid email"
                             showSnackBar = true
                         }
-
                     }
                     ) {
                         Text(text = "Submit")

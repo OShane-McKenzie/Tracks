@@ -47,7 +47,7 @@ fun CustomSnackBar(
         mutableStateOf(isVisible)
     }
 
-    LaunchedEffect(show){
+    LaunchedEffect(Unit){
         if(!show) return@LaunchedEffect
         delay((duration*0.95).toLong())
         show = false

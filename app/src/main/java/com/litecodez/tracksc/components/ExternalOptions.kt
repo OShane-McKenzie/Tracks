@@ -177,7 +177,7 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                     showDeleteAccountDialog = false
                 },
                 title = { Text("Delete account") },
-                text = { Text("Do are you sure you want to delete your account? This action cannot be undone.") },
+                text = { Text("Are you sure you want to delete your account? This action cannot be undone.") },
                 confirmButton = {
                     TextButton(onClick = {
                         appNavigator.setViewState(delete, updateHistory = false, execTask = true){
