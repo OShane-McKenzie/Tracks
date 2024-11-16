@@ -151,6 +151,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
             }
         }
     }
+
     LaunchedEffect(Controller.reloadMessage.value) {
         if(reactionListInitialized){
             val chat = contentProvider.conversations.value.find {
