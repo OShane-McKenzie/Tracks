@@ -1,6 +1,6 @@
 # Tracks - Synchronized Music Messaging
 
-![Tracks Logo](screenshots/logo.png)
+<img src="screenshots/logo.png" alt="Tracks Logo" width="300">
 
 **Version:** 1.0
 
@@ -28,30 +28,30 @@
 
 ### Music Features
 - 🎵 **Synchronized Music Playback**: Listen to music simultaneously with your chat partner
-- 🎶 **Multiple Music Sources**: 
-  - Play from Tracks' internal music database
-  - Stream music from YouTube links
-- 🎧 **Shared Music Controls**: 
-  - Both users can play, pause, and stop music
-  - Skip to next/previous tracks
-  - Real-time synchronization of playback state
+- 🎶 **Multiple Music Sources**:
+    - Play from Tracks' internal music database
+    - Stream music from YouTube links
+- 🎧 **Shared Music Controls**:
+    - Both users can play, pause, and stop music
+    - Skip to next/previous tracks
+    - Real-time synchronization of playback state
 
 ## Screenshots
 
 ### Chat Experience
-![Main Chat Interface](screenshots/conversation_screen_1.png)
-![Active Music Session](screenshots/conversation_screen_2.png)
+<img src="screenshots/conversation_screen_1.png" alt="Main Chat Interface" width="300">
+<img src="screenshots/conversation_screen_2.png" alt="Active Music Session" width="300">
 
 ### Navigation & Music Control
-![Main Navigation](screenshots/navigation_drawer_1.png)
-![Music Controls](screenshots/navigation_drawer_2.png)
+<img src="screenshots/navigation_drawer_1.png" alt="Main Navigation" width="300">
+<img src="screenshots/navigation_drawer_2.png" alt="Music Controls" width="300">
 
 ### Music & Playlists
-![Playlist View](screenshots/playlist_1.png)
-![Custom Theme](screenshots/wallpaper_1.png)
+<img src="screenshots/playlist_1.png" alt="Playlist View" width="300">
+<img src="screenshots/wallpaper_1.png" alt="Custom Theme" width="300">
 
 ### User Access
-![Login Screen](screenshots/login_screen.png)
+<img src="screenshots/login_screen.png" alt="Login Screen" width="300">
 
 ## Building from Source
 
