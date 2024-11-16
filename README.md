@@ -46,11 +46,12 @@
 <img src="screenshots/navigation_drawer_1.png" alt="Main Navigation" width="300">
 <img src="screenshots/navigation_drawer_2.png" alt="Music Controls" width="300">
 
-### Music & Playlists
+### Wallpaper & Playlists
 <img src="screenshots/playlist_1.png" alt="Playlist View" width="300">
 <img src="screenshots/wallpaper_1.png" alt="Custom Theme" width="300">
 
 ### User Access
+<img src="screenshots/home_screen_1.png" alt="Home Screen" width="300">
 <img src="screenshots/login_screen.png" alt="Login Screen" width="300">
 
 ## Building from Source
