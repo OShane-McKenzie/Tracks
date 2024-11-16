@@ -110,12 +110,10 @@ fun ChatBubble(modifier: Modifier = Modifier,
     }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-
         localImageFound = imgFile.exists()
         reactionList.clear()
         reactionList.addAll(message.reactions)
         reactionListInitialized = true
-
         fun getImage() {
             contentRepository.getImageUrl(
                 bucket = Databases.Buckets.USER_UPLOADS,
