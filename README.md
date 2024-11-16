@@ -29,7 +29,7 @@
 ### Music Features
 - 🎵 **Synchronized Music Playback**: Listen to music simultaneously with your chat partner
 - 🎶 **Multiple Music Sources**:
-    - Play from Tracks' internal music database
+    - Play from Tracks' remote music database
     - Stream music from YouTube links
 - 🎧 **Shared Music Controls**:
     - Both users can play, pause, and stop music
