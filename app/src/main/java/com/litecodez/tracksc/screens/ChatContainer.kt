@@ -1,6 +1,7 @@
 package com.litecodez.tracksc.screens
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -29,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -94,6 +96,7 @@ import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.Databases
 import com.litecodez.tracksc.models.MediaDeleteRequest
+import com.litecodez.tracksc.objects.ImageSharer
 import com.litecodez.tracksc.objects.Operator
 import com.litecodez.tracksc.objects.RestrictionType
 import com.litecodez.tracksc.objects.TCDataTypes
@@ -111,7 +114,7 @@ import java.io.IOException
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,operator: Operator) {
+fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,operator: Operator, imageSharer: ImageSharer) {
     val context = LocalContext.current
     val messages = remember { derivedStateOf { contentProvider.currentChat.value?.content ?: listOf(MessageModel()) } }
     var showSnackBar by remember { mutableStateOf(false) }
@@ -129,7 +132,9 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
     var messageListReady by rememberSaveable {
         mutableStateOf(false)
     }
-    
+    var sharedImage by remember {
+        mutableStateOf<Bitmap?>(null)
+    }
     var removeMask by rememberSaveable {
         mutableStateOf(false)
     }
@@ -460,11 +465,28 @@ fun ChatContainer(modifier: Modifier = Modifier, audioRecorder: AudioRecorder,op
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                ImageInChat(img = imageData)
+                ImageInChat(img = imageData){
+                    sharedImage = it
+                }
 
                 IconButton(onClick = { enlargeMessage = false }, modifier = Modifier.align(Alignment.TopEnd)) {
                     Icon(
                         imageVector = Icons.Default.Close,
+                        contentDescription = ""
+                    )
+                }
+                IconButton(onClick = {
+                    sharedImage.ifNotNull {
+                        imageSharer.shareBitmap(
+                            context = context,
+                            bitmap = it,
+                            fileName = "shared_image_"+getCurrentTime()+".jpg",
+                            chooserTitle = "Share Image from Tracks"
+                        )
+                    }
+                }, modifier = Modifier.align(Alignment.TopStart)) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
                         contentDescription = ""
                     )
                 }

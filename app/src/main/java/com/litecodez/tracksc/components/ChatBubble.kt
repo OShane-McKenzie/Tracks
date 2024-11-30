@@ -3,7 +3,6 @@ package com.litecodez.tracksc.components
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -11,15 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -50,21 +46,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.litecodez.tracksc.R
 import com.litecodez.tracksc.audioPlayer
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.models.MessageModel
 import com.litecodez.tracksc.objects.TCDataTypes
 import com.litecodez.tracksc.contentRepository
 import com.litecodez.tracksc.getToast
-import com.litecodez.tracksc.getUserName
 import com.litecodez.tracksc.getUserUid
 import com.litecodez.tracksc.ifNotNull
-import com.litecodez.tracksc.ifNull
-import com.litecodez.tracksc.models.AudioPlayer
 import com.litecodez.tracksc.models.ReactionModel
 import com.litecodez.tracksc.objects.AnimationStyle
 import com.litecodez.tracksc.objects.Controller
@@ -172,7 +163,7 @@ fun ChatBubble(modifier: Modifier = Modifier,
         reactionList.clear()
         reactionList.addAll(message.reactions)
     }
-    //if(TCDataTypes.UserType.isThisUser(message.sender)) Arrangement.End else Arrangement.Start
+
     Box(
         modifier = Modifier.wrapContentSize()
     ) {

@@ -33,6 +33,7 @@ import com.litecodez.tracksc.objects.ContentRepository
 import com.litecodez.tracksc.objects.Controller
 import com.litecodez.tracksc.objects.CustomExceptionHandler
 import com.litecodez.tracksc.objects.Dependencies
+import com.litecodez.tracksc.objects.ImageSharer
 import com.litecodez.tracksc.objects.NetworkManager
 import com.litecodez.tracksc.objects.Watchers
 import com.litecodez.tracksc.ui.theme.TracksTheme
@@ -85,7 +86,7 @@ class MainActivity : ComponentActivity() {
             contentProvider.minorThemeColor.value = Color(minor)
             contentProvider.textThemeColor.value = Color(textTheme)
             contentProvider.wallpaper.intValue = contentProvider.wallpaperMap[wallpaper] ?: R.drawable.tracks_bg_6
-
+            ImageSharer().clearSharedFiles(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
         }

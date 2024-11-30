@@ -134,7 +134,12 @@ fun Root(dependencies: Dependencies){
                 SimpleAnimator(
                     style = AnimationStyle.RIGHT
                 ) {
-                    ChatContainer(modifier = Modifier.fillMaxSize(), audioRecorder = dependencies.audioRecorder,operator = dependencies.operator)
+                    ChatContainer(
+                        modifier = Modifier.fillMaxSize(),
+                        audioRecorder = dependencies.audioRecorder,
+                        operator = dependencies.operator,
+                        imageSharer = dependencies.imageSharer
+                    )
                 }
             }
             loading->{

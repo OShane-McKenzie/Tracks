@@ -24,5 +24,6 @@ class Dependencies(
     val authenticationManager = AuthenticationManager(activity = activity, context = context)
     val operator = Operator(context = context, authenticationManager = authenticationManager)
     val audioRecorder = AudioRecorder(context, dir)
+    val imageSharer = ImageSharer()
 
 }
