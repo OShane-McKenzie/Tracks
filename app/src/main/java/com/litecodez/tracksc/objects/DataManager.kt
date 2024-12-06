@@ -5,6 +5,24 @@ import android.util.Log
 import java.io.File
 
 class DataManager(private val context: Context) {
+
+    fun free(dir: String): Boolean {
+        val directory = File(context.filesDir, dir)
+        return try {
+            directory.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    file.deleteRecursively()
+                } else {
+                    file.delete()
+                }
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
     /**
      * Clears different types of app data based on the specified options
      * @param clearCache Whether to clear the app's cache

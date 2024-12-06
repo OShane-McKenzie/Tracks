@@ -33,10 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.litecodez.tracksc.appNavigator
 import com.litecodez.tracksc.contentProvider
 import com.litecodez.tracksc.delete
+import com.litecodez.tracksc.getToast
 import com.litecodez.tracksc.ifNotEmpty
 import com.litecodez.tracksc.ifNotNull
 import com.litecodez.tracksc.objects.AnimationStyle
@@ -56,6 +58,7 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
     val scrollState = rememberScrollState()
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -141,6 +144,19 @@ fun ExternalOptions(modifier: Modifier = Modifier, operator: Operator) {
                 Text(text = "Get Help")
             }
 
+            Button(
+                onClick = {
+                    operator.freeSpaceOperation(){
+                        getToast(context = context, "Cleared")
+                    }
+                },
+                colors = ButtonDefaults.buttonColors().copy(
+                    contentColor = contentProvider.majorThemeColor.value,
+                    containerColor = contentProvider.textThemeColor.value
+                )
+            ) {
+                Text(text = "Free-up space")
+            }
             Button(
                 onClick = {
                     Controller.splashOperationNotRun.value = true

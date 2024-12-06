@@ -510,6 +510,18 @@ class Operator(
                 getToast(context, "Error sending account deletion request")
             }
     }
+
+    fun freeSpaceOperation(onComplete:()->Unit={}){
+        operationScope.launch {
+            val dataManager = DataManager(context = context)
+            dataManager.free(Databases.Local.AUDIO_DB)
+            dataManager.free(Databases.Local.IMAGES_DB)
+            dataManager.clearAppData(clearCache = true, clearFiles = false, clearSharedPrefs = false, clearDatabases = false)
+            withContext(Dispatchers.Main){
+                onComplete.invoke()
+            }
+        }
+    }
 }
 
 
