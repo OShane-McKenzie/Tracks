@@ -124,7 +124,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ## License
 This software is provided under the Restricted Access Software License (RASL), Version 1.0.
-See the [LICENSE](LICENSE) file for details.
+See the [LICENSE](LICENSE.md) file for details.
 
 ---
 Made with ♥️ by the Tracks Team
