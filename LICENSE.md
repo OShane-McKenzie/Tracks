@@ -1,5 +1,3 @@
-This software is provided under the Restricted Access Software License (RASL), Version 1.0.
-
 # Restricted Access Software License (RASL)
 
 ## PREAMBLE
